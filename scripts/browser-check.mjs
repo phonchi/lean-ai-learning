@@ -2,8 +2,8 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4321';
-const output = resolve('verification/browser');
+const origin = (process.env.PREVIEW_URL || 'http://127.0.0.1:4321').replace(/\/$/, '');
+const output = resolve(process.env.BROWSER_OUTPUT || 'verification/browser');
 await mkdir(resolve(output, 'screenshots'), { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'zh-TW', colorScheme: 'light', permissions: ['clipboard-read', 'clipboard-write'], reducedMotion: 'reduce' });
@@ -29,9 +29,12 @@ try {
  for (const route of routes) {
   await visit(route);
   const discovered = await page.locator('a[href]').evaluateAll(as => as.map(a => a.href));
-  for (const href of discovered) if (href.startsWith(origin)) links.add(href.split('#')[0]);
+  for (const href of discovered) if (new URL(href).origin === new URL(origin).origin) links.add(href.split('#')[0]);
  }
  for (const href of links) {
+  const prefix = new URL(origin).pathname.replace(/\/$/, '');
+  const pathname = new URL(href).pathname;
+  check('站內連結保留發布子路徑 ' + pathname, !prefix || pathname === prefix || pathname.startsWith(prefix + '/'));
   const response = await context.request.get(href);
   check('站內連結 ' + new URL(href).pathname, response.status() === 200, String(response.status()));
  }

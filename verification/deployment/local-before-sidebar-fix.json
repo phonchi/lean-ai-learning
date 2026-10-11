@@ -1,0 +1,349 @@
+{
+  "origin": "http://127.0.0.1:4321/lean-ai-learning",
+  "browser": "156.0.8078.4",
+  "checkedAt": "2026-10-11T10:17:15.472Z",
+  "checks": [
+    {
+      "name": "完整教材頁數",
+      "passed": true,
+      "details": "16"
+    },
+    {
+      "name": "載入 /",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/01-first-proof/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/01-first-proof/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/01-first-proof/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/02-propositions-as-types/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/02-propositions-as-types/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/02-propositions-as-types/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/03-logic-and-quantifiers/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/03-logic-and-quantifiers/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/03-logic-and-quantifiers/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/04-induction-and-sums/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/04-induction-and-sums/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/04-induction-and-sums/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/05-mathlib/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/05-mathlib/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/05-mathlib/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/06-agent-collaboration/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/06-agent-collaboration/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/06-agent-collaboration/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/07-lean-tools/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/07-lean-tools/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/07-lean-tools/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /chapters/08-project-audit/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /chapters/08-project-audit/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /chapters/08-project-audit/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /labs/01-proof-repair/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /labs/01-proof-repair/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /labs/01-proof-repair/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /labs/02-odd-sum/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /labs/02-odd-sum/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /labs/02-odd-sum/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /labs/03-sum-of-squares/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /labs/03-sum-of-squares/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /labs/03-sum-of-squares/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /advanced/01-limits/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /advanced/01-limits/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /advanced/01-limits/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /advanced/02-projection/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /advanced/02-projection/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /advanced/02-projection/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /guides/resources/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /guides/resources/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /guides/resources/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "載入 /guides/setup/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "繁體中文語系 /guides/setup/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "唯一非空主標題 /guides/setup/",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/01-first-proof/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/guides/setup/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/02-propositions-as-types/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/03-logic-and-quantifiers/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/04-induction-and-sums/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/05-mathlib/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/06-agent-collaboration/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/07-lean-tools/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/chapters/08-project-audit/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/labs/01-proof-repair/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/labs/02-odd-sum/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/labs/03-sum-of-squares/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/advanced/01-limits/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/advanced/02-projection/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/guides/resources/",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/downloads/lean-ai-examples.zip",
+      "passed": true,
+      "details": "200"
+    },
+    {
+      "name": "站內連結 /lean-ai-learning/lean-ai-learning/guides/setup/",
+      "passed": false,
+      "details": "404"
+    },
+    {
+      "name": "驗證程序",
+      "passed": false,
+      "details": "Error: 站內連結 /lean-ai-learning/lean-ai-learning/guides/setup/: 404"
+    }
+  ],
+  "errors": [],
+  "passed": false
+}

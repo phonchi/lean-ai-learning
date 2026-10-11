@@ -13,3 +13,8 @@ verification/agents/*/.lake
 verification/agents/*/raw*
 !verification/**/*.log
 verification/browser/v0/
+
+# 影片與字幕僅供備課，原始媒體及逐字稿不部署。
+research/video-sources/
+verification/deployment/screenshots/
+verification/deployment/**/screenshots/
