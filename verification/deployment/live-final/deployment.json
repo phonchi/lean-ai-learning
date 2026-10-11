@@ -1,0 +1,15 @@
+{
+  "verified_at": "2026-10-11T10:43:37.563561+00:00",
+  "deployed_commit": "ad292fa585f9a1e28667b88140a80a5f352862b0",
+  "workflow_run": "https://github.com/phonchi/lean-ai-learning/actions/runs/38132733015",
+  "site": "https://phonchi.github.io/lean-ai-learning/",
+  "repo": "https://github.com/phonchi/lean-ai-learning",
+  "visibility": "public",
+  "https_enforced": true,
+  "live_browser_checks": 150,
+  "passed": true,
+  "download_sources_match": true,
+  "canonical_theorems": 21,
+  "whisper_video_count": 6,
+  "raw_media_public": false
+}
