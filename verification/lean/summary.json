@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-11T02:11:00.511619+00:00",
+  "timestamp_utc": "2026-10-11T10:28:23.861142+00:00",
   "toolchain": "leanprover/lean4:v4.34.1",
   "results": [
     {
@@ -114,6 +114,17 @@
       "passed": true
     },
     {
+      "check": "file-VideoPractice",
+      "command": [
+        "lake",
+        "env",
+        "lean",
+        "Course/VideoPractice.lean"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
       "check": "axioms",
       "command": [
         "lake",
@@ -148,7 +159,12 @@
         "Course.projection_coordinates",
         "Course.projection_fixed_iff",
         "Course.squares_nonneg",
-        "Course.squares_zero"
+        "Course.squares_zero",
+        "Course.two_add_two",
+        "Course.proof_as_function",
+        "Course.add_double_negation",
+        "Course.eliminate_double_negation",
+        "Course.missing_negation_counterexample"
       ]
     },
     {

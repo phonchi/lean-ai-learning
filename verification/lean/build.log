@@ -1,6 +1,7 @@
-ℹ [1/520] Replayed Course.First
+ℹ [1/371] Replayed Course.First
 info: Course/First.lean:13:0: Course.first_proof (P : Prop) (h : P) : P
 info: Course/First.lean:14:0: 'Course.first_proof' does not depend on any axioms
-✔ [1055/1496] Built Course.Logic (206ms)
-✔ [1524/1525] Built Course (940ms)
-Build completed successfully (1525 jobs).
+ℹ [1524/1526] Built Course.VideoPractice (203ms)
+info: Course/VideoPractice.lean:5:0: 2 + 2 = 5 : Prop
+✔ [1525/1526] Built Course (10s)
+Build completed successfully (1526 jobs).

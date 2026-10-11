@@ -15,3 +15,8 @@ import Course
 #print axioms Course.projection_fixed_iff
 #print axioms Course.squares_nonneg
 #print axioms Course.squares_zero
+#print axioms Course.two_add_two
+#print axioms Course.proof_as_function
+#print axioms Course.add_double_negation
+#print axioms Course.eliminate_double_negation
+#print axioms Course.missing_negation_counterexample

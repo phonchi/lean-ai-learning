@@ -1,17 +1,17 @@
 {
   "chapters/01-first-proof.mdx": "55999a59f6a67199fc83cac3efa47cf06a574cdfd5f9b6354eb8c2c43e14b726",
-  "chapters/02-propositions-as-types.mdx": "aa82818dde923159dc32b057648afbeb9c227553e9bd8f3837bd0c3b1b38c0f0",
-  "chapters/03-logic-and-quantifiers.mdx": "c7d35b9ab43637f84b489379f4f67e0dc41fcfd8ad4d119b0502c6bbad55d92a",
+  "chapters/02-propositions-as-types.mdx": "443123a07d479b497abf013615e8e86ae78a3a9b694272fe90b264dcca44d6be",
+  "chapters/03-logic-and-quantifiers.mdx": "852da7c5fc4af673306c8ee952dda079b9fbe3f22e7cced26836de19caccfb40",
   "chapters/04-induction-and-sums.mdx": "d8f04a5d96f501f90695ac2ecc1b78ed4fa424028132f0c104d68aa4b88b81be",
   "chapters/05-mathlib.mdx": "eec1c301e1d64224656f267a05968246090489a83eeee143a3bdb0ca3a163022",
   "chapters/06-agent-collaboration.mdx": "bcec8a263c51942c054f8193c6b48c8109c553082d6f28f98f26775c82f0fdc6",
   "chapters/07-lean-tools.mdx": "be799b683841f3042a6dbb8d47c3d6a53a5960d41d592592518d56d7a81f6302",
-  "chapters/08-project-audit.mdx": "fb4295b7ecef46adc27ed37de3f81f26d0058aa78c6b4c43652e59490f7b126c",
+  "chapters/08-project-audit.mdx": "18c1927977bd55e3f90689b8e7a8783b2cdb02b91c71be0831ecf3c2a726655b",
   "labs/01-proof-repair.mdx": "8acac34d57939b3ff8335904e478e0924a6dc3ab014d9b97cf94258b3564960a",
   "labs/02-odd-sum.mdx": "d15cf18f1193646ae6abf43dba27f040be4b306662768a85980bd8bbf9a329ec",
   "labs/03-sum-of-squares.mdx": "f4846e55635aa78f62c53ed80ced43d1dfdaa64ae2774823d960f33265f3dd93",
   "advanced/01-limits.mdx": "40ee2db6756c2035a1a7b52bd61986dcac7c6c579be81713f2e86c01559a152d",
   "advanced/02-projection.mdx": "ae1c4b18f44e08d27b7a7e3471cd482bab2334e2f51a5a1c6c375680f9e544cf",
   "guides/setup.mdx": "f7b922332ab3c8abffeaa67e7599c78fe0a4a770afd8b1012a1d343581649aa3",
-  "guides/resources.mdx": "2be8ad5ee37be66b686f892d1c456edc5b470216cc9be6c5167461a6383e33c7"
+  "guides/resources.mdx": "7698762f2a9152292f2c03533318e5f4d6c0a6a01c85082b4a8047b4545edcb4"
 }

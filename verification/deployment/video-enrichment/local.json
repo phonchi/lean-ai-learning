@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "route": "chapters/02-propositions-as-types",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "passed": true
+    },
+    {
+      "route": "chapters/03-logic-and-quantifiers",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "passed": true
+    },
+    {
+      "route": "chapters/08-project-audit",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "passed": true
+    },
+    {
+      "route": "guides/resources",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "passed": true
+    },
+    {
+      "route": "chapters/02-propositions-as-types",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "passed": true
+    },
+    {
+      "route": "chapters/03-logic-and-quantifiers",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "passed": true
+    },
+    {
+      "route": "chapters/08-project-audit",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "passed": true
+    },
+    {
+      "route": "guides/resources",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "passed": true
+    }
+  ],
+  "errors": []
+}

@@ -3,6 +3,8 @@ name: Deploy Lean learning site to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - verification/**
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,54 @@
+{
+  "method": "本機faster-whisper，未使用付費API或上傳媒體",
+  "model": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+  "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
+  "audio_seconds": 4279.577,
+  "asr_seconds_excluding_download": 122.6527795791626,
+  "segments": 2215,
+  "original_teaching_notes": 30,
+  "videos": [
+    {
+      "id": "STMP2kFx3fw",
+      "title": "電腦憑什麼說一個數學證明是對的？｜How Lean Works 第 1 集",
+      "audio_duration": 560.8315625,
+      "asr_seconds": 20.985986948013306,
+      "segments": 275
+    },
+    {
+      "id": "N7SYYyZO2DU",
+      "title": "型別檢查到底在檢查什麼？｜How Lean Works 第 2 集",
+      "audio_duration": 884.5409375,
+      "asr_seconds": 24.922492504119873,
+      "segments": 489
+    },
+    {
+      "id": "aQP13mmH2mk",
+      "title": "你早就在用的推論規則｜How Lean Works 第 3 集",
+      "audio_duration": 624.1988125,
+      "asr_seconds": 16.896472692489624,
+      "segments": 326
+    },
+    {
+      "id": "7k3qG68PdYQ",
+      "title": "「推出」就是函數｜How Lean Works 第 4 集",
+      "audio_duration": 862.7374375,
+      "asr_seconds": 23.760430812835693,
+      "segments": 424
+    },
+    {
+      "id": "H7KaiMwzyJQ",
+      "title": "且、或、非，都是型別｜How Lean Works 第 5 集",
+      "audio_duration": 866.15075,
+      "asr_seconds": 22.934295415878296,
+      "segments": 454
+    },
+    {
+      "id": "Dqqh1G-CnL8",
+      "title": "為什麼「P 或非 P」造不出來？｜How Lean Works 第 6 集",
+      "audio_duration": 481.1175,
+      "asr_seconds": 13.153101205825806,
+      "segments": 247
+    }
+  ],
+  "quality_scope": "已通讀辨識草稿，未逐句回聽；專名及雙重否定有誤識。教材只採原創重述與獨立驗證的Lean練習。原始音訊與逐字稿不公開。"
+}

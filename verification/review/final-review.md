@@ -18,6 +18,12 @@
 - unknown identifier先核對import與namespace；
 - 歸納法不被說成唯一普遍證明方法。
 
-ZIP的git-index比較流程、MCP工具參數與sorry後空goal陷阱、投影Set.range練習、極限與平方和提示均確認無誤。最後15頁hash見 final-reading-hashes.json，主代理已逐一計算並確認吻合。
+ZIP的git-index比較流程、MCP工具參數與sorry後空goal陷阱、投影Set.range練習、極限與平方和提示均確認無誤。當時15頁hash保存為 baseline-reading-hashes.json；原主線的閱讀閉環已完成。
 
 瀏覽器最終結果另見 verification/browser/results.json；canonical編譯與公理檢查見 verification/lean/summary.json；六候選見 verification/agents/*/verified-summary.json。
+
+## 影片導讀增補
+
+六集本機Whisper備課後，由Astra只增補第2、3、8章及資源頁。Claude Opus唯讀核對四頁差異、新Course/VideoPractice.lean與既有編譯證據，未發現阻擋；數學、四regions、命題與反例確認無誤。Opus沒有自行執行編譯。其建議的自動轉錄時間定位／未逐句校對註記已加入資源頁。
+
+新增5個定理由主代理實際編譯並稽核公理；共21定理、25項canonical檢查全通過。全文字幕與音訊仍在被Git排除的研究目錄。最後15頁指紋見 final-reading-hashes.json，其餘11頁與已全文讀過基線完全一致；只有上述4頁有經審閱的增補。

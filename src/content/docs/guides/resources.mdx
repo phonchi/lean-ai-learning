@@ -46,7 +46,7 @@ Lean 社群（mathlib 維護者所在的社群）整理的學習資源頁，偏�
 
 AI101 頻道的系列影片（[播放清單](https://www.youtube.com/playlist?list=PLCKW73PRfmKo)）以中文介紹證明檢查、型別與邏輯的基本概念，可以作為本站前三章的補充。
 
-**說明**：以下推薦依據影片的標題與說明文字整理；本站未逐字核對影片內容，影片中的說法以影片本身為準。
+先依下表選擇主題，再用後面的時間連結帶著問題觀看。影片中的例子可和 Lean 練習相互對照；遇到公式，請先停下來自己寫一次。
 
 | 集數 | 標題 | 長度 | 建議搭配 |
 | --- | --- | --- | --- |
@@ -56,6 +56,19 @@ AI101 頻道的系列影片（[播放清單](https://www.youtube.com/playlist?li
 | 4 | [「推出」就是函數](https://www.youtube.com/watch?v=7k3qG68PdYQ) | 14:23 | [第 2 章](../../chapters/02-propositions-as-types/)：Curry–Howard |
 | 5 | [且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ) | 14:27 | [第 2 章](../../chapters/02-propositions-as-types/)、[第 3 章](../../chapters/03-logic-and-quantifiers/) |
 | 6 | [為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8) | 8:02 | [第 3 章](../../chapters/03-logic-and-quantifiers/)：constructive 與 classical |
+
+### 帶著問題看片
+
+以下時間點由自動轉錄協助定位，未逐句回聽校對，請當作約略的看片起點。影片中的公式請以畫面為準，練習的精確敘述則以本站 Lean 原始碼為準。先回答問題，再到對應章節實作；不用一次看完整個系列。
+
+| 看片起點 | 帶著什麼問題看 | 對應練習 |
+| --- | --- | --- |
+| [第 2 集約 2:12](https://www.youtube.com/watch?v=N7SYYyZO2DU&t=132s) | 函數要求的輸入型別，和交出的證據一致嗎？ | [第 2 章的型別表](../../chapters/02-propositions-as-types/) |
+| [第 2 集約 11:05](https://www.youtube.com/watch?v=N7SYYyZO2DU&t=665s) | 合法的命題，是否就已經有證明？ | [第 2 章的命題查詢](../../chapters/02-propositions-as-types/) |
+| [第 3 集約 5:24](https://www.youtube.com/watch?v=aQP13mmH2mk&t=324s) | `imp_trans` 每一步需要哪個前提？ | [實戰 1](../../labs/01-proof-repair/) |
+| [第 4 集約 7:05](https://www.youtube.com/watch?v=7k3qG68PdYQ&t=425s) | 從內層到外層，每次套用得到什麼型別？ | [第 2 章的函數組合](../../chapters/02-propositions-as-types/) |
+| [第 5 集約 6:28](https://www.youtube.com/watch?v=H7KaiMwzyJQ&t=388s) | 分情況時，為什麼兩邊都要證出同一個目標？ | [第 3 章「或」的練習](../../chapters/03-logic-and-quantifiers/) |
+| [第 6 集約 1:20](https://www.youtube.com/watch?v=Dqqh1G-CnL8&t=80s) | `P → ¬¬P` 和反方向，使用的推理一樣嗎？ | [第 3 章](../../chapters/03-logic-and-quantifiers/)、[第 8 章的漏否定反例](../../chapters/08-project-audit/) |
 
 觀看第 6 集時，請搭配第 3 章「Constructive 與 classical」一節：在不使用 classical 公理時排中律無法構造出來，但 Lean 加入 `Classical.choice` 等標準公理後，排中律是可以使用的定理。
 

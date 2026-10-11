@@ -1,1 +1,14 @@
-{ "extends": "astro/tsconfigs/strict", "include": [".astro/types.d.ts", "**/*"], "exclude": ["dist", "lean-examples", ".tools"] }
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "dist",
+    "lean-examples",
+    ".tools",
+    "research",
+    "verification"
+  ]
+}

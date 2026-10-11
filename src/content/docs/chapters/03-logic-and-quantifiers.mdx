@@ -104,6 +104,23 @@ import LeanCode from '../../../components/LeanCode.astro';
 - Lean 加入了 `Classical.choice` 等公理後，排中律是一個定理，正常數學工作可以放心使用。
 - 用了這些標準公理，`#print axioms` 會列出 `Classical.choice`，這**不是**作弊的跡象。
 
+## 動手：雙重否定的兩個方向
+
+從[第 6 集約 1:20](https://www.youtube.com/watch?v=Dqqh1G-CnL8&t=80s)開始看，把 `P → ¬¬P` 與 `¬¬P → P` 分別寫在紙上。先把每個 `¬A` 展開成 `A → False`，再判斷兩邊各要交出什麼。
+
+<LeanCode file="Course/VideoPractice.lean" region="double-negation" />
+
+第一個方向：已知 `hP : P`，若再收到 `hNotP : P → False`，套用 `hNotP hP` 就得到矛盾。反方向面對任意命題時，這裡使用標準古典定理 `Classical.byContradiction`，不是另加一條自訂公理。
+
+請在自己的練習檔先寫 `import Course.VideoPractice`，再查詢兩個定理：
+
+```lean
+#print axioms Course.add_double_negation
+#print axioms Course.eliminate_double_negation
+```
+
+讀出實際依賴，說明為什麼兩份證明使用的基礎不同。`P ∨ ¬P` 在 Lean 的標準古典基礎下也可由 `Classical.em` 得到；不能把「構造式片段中不可證」說成「Lean 不能證明」。
+
 ## 練習
 
 ### 練習 3.1　或的交換
@@ -191,6 +208,6 @@ example (p q : Prop) : (p → q) → ¬ q → ¬ p := by
 
 - [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Propositions and Proofs」與「Quantifiers and Equality」兩章；其中也討論了 classical 邏輯。
 - [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 的「Logic」一章，有大量數學風格的練習。
-- 觀看建議（AI101 系列，僅依標題與說明推薦，未逐字核對）：第 3 集〈[你早就在用的推論規則](https://www.youtube.com/watch?v=aQP13mmH2mk)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉、第 6 集〈[為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8)〉。
+- 觀看建議（AI101 系列；對照引入、消去與上面的雙重否定練習）：第 3 集〈[你早就在用的推論規則](https://www.youtube.com/watch?v=aQP13mmH2mk)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉、第 6 集〈[為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8)〉。
 - 實作：學完本章即可挑戰 [實戰 1：命題邏輯證明修復](../../labs/01-proof-repair/)。
 - 下一章：[歸納與有限和](../04-induction-and-sums/)。

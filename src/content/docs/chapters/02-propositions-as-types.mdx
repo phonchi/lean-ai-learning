@@ -107,6 +107,33 @@ Lean 處理一個證明時，大致分兩層：
 
 你可能注意到變數宣告寫的是 `(p : Prop)`。`Prop` 是「所有命題」所成的型別，`ℕ`、`ℝ` 則屬於 `Type`。兩者一個重要差異：在 `Prop` 中，Lean 只在乎「有沒有證明」，不在乎「是哪一個證明」。兩個同一命題的證明被視為相等。對數學工作而言，這符合直覺：我們關心定理是否成立，而不是證明的長相。
 
+## 動手：命題合法，證明就存在嗎？
+
+從[第 2 集約 11:05](https://www.youtube.com/watch?v=N7SYYyZO2DU&t=665s)開始看，先回答：`2 + 2 = 5` 是合法命題嗎？再開啟 `Course/VideoPractice.lean`，觀察以下查詢與定理的差別：
+
+<LeanCode file="Course/VideoPractice.lean" region="legal-proposition" />
+
+`#check` 顯示 `Prop`，只表示它是命題，沒有證明它為真；下面的 `rfl` 則交出了另一個命題的證據。
+
+接著回看[第 2 集約 2:12](https://www.youtube.com/watch?v=N7SYYyZO2DU&t=132s)的函數套用，並讀這個 proof term：
+
+<LeanCode file="Course/VideoPractice.lean" region="proof-as-function" />
+
+先在紙上寫出三個表達式的型別，再展開對照。還不能判斷時，請 agent 只解釋下一次套用需要什麼輸入。
+
+<details>
+<summary>對照型別</summary>
+
+| 表達式 | 型別 |
+| --- | --- |
+| `hP` | `P` |
+| `hPQ hP` | `Q` |
+| `hQR (hPQ hP)` | `R` |
+
+</details>
+
+最後在自己的練習副本把函數身體改成 `hQR hP`：它要求 `Q` 的證據，你交出的卻是 `P` 的證據。先預測診斷，再交給 Lean 檢查；也可從[第 4 集約 7:05](https://www.youtube.com/watch?v=7k3qG68PdYQ&t=425s)對照逐節點檢查的想法。
+
 ## AI 協作的小練習
 
 請 AI 把一個 tactic 證明「翻譯」成 term 證明，是一個很好的練習，因為**你能用 Lean 驗證它的答案**。但請在 Prompt 中要求它解釋每個 `fun` 與套用分別對應哪個數學步驟，然後自己檢查解釋是否合理。如果 AI 給的 term 無法通過檢查，不要只把錯誤訊息丟回去，先試著讀懂：哪個值的型別不對？
@@ -167,5 +194,5 @@ example (p q : Prop) : p → q → p := sorry
 ## 延伸閱讀與觀看
 
 - [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Propositions and Proofs」一章，是本章內容最直接的延伸。
-- 觀看建議（AI101 系列，本站僅依標題與說明推薦，未逐字核對）：第 2 集〈[型別檢查到底在檢查什麼？](https://www.youtube.com/watch?v=N7SYYyZO2DU)〉、第 4 集〈[「推出」就是函數](https://www.youtube.com/watch?v=7k3qG68PdYQ)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉。
+- 觀看建議（AI101 系列；帶著上面的型別表對照閱讀）：第 2 集〈[型別檢查到底在檢查什麼？](https://www.youtube.com/watch?v=N7SYYyZO2DU)〉、第 4 集〈[「推出」就是函數](https://www.youtube.com/watch?v=7k3qG68PdYQ)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉。
 - 下一章：[邏輯與量詞](../03-logic-and-quantifiers/)。
