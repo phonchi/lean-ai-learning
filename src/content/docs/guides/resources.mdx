@@ -1,0 +1,69 @@
+---
+title: 學習資源
+description: 本課程引用的官方與社群資料、各章節對應的延伸閱讀，以及概念補充用的影片觀看建議。
+sidebar:
+  order: 2
+---
+
+本頁整理本課程使用的外部資料，並說明它們分別適合在什麼時候讀。這些資料多為英文；本站的章節已用中文說明核心概念，外部資料適合在你想看更多例子或更完整的說明時查閱。
+
+## 官方與社群文件
+
+### Lean 官方：[Learn](https://lean-lang.org/learn/)
+
+Lean 官方的學習入口，列出安裝方式與各類教材。遇到安裝問題，或想知道還有哪些教材時，從這裡開始。對應本站：[環境設定](../setup/)、[第 1 章](../../chapters/01-first-proof/)。
+
+### 社群：[Learning Lean 4](https://leanprover-community.github.io/learn.html)
+
+Lean 社群（mathlib 維護者所在的社群）整理的學習資源頁，偏向數學形式化，也列出 mathlib 文件與搜尋工具的入口。對應本站：[第 5 章](../../chapters/05-mathlib/)。
+
+### [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/)（TPIL）
+
+系統介紹 Lean 的型別理論基礎：命題即型別、量詞、歸納型別、tactic。風格偏向邏輯與語言本身，適合想深入理解「為什麼」的讀者。
+
+- 「Propositions and Proofs」：對應 [第 2 章](../../chapters/02-propositions-as-types/) 與 [第 3 章](../../chapters/03-logic-and-quantifiers/)。
+- 「Quantifiers and Equality」：對應 [第 3 章](../../chapters/03-logic-and-quantifiers/)。
+- 「Inductive Types」與「Induction and Recursion」：對應 [第 4 章](../../chapters/04-induction-and-sums/)。
+
+### [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/)（MIL）
+
+以 mathlib 為基礎、從數學系學生的角度出發的教材，有大量練習。風格偏向「怎麼在 Lean 中做數學」，是本課程之後最自然的下一本書。
+
+- 「Basics」：`rw`、`ring`、`linarith` 與如何使用 mathlib 引理，對應 [第 5 章](../../chapters/05-mathlib/)。
+- 「Logic」：對應 [第 3 章](../../chapters/03-logic-and-quantifiers/) 的練習延伸。
+- 序列與極限、拓撲相關章節：對應 [進階 1](../../advanced/01-limits/)。
+- 線性代數相關章節：對應 [進階 2](../../advanced/02-projection/)。
+
+## AI 工具與 MCP
+
+- [Claude Code：MCP 設定](https://code.claude.com/docs/en/mcp)：說明如何以 stdio 方式新增本機 MCP 伺服器，以及 project scope 的設定方式。
+- [Codex：MCP 設定](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)：說明 Codex CLI 新增 MCP 伺服器的指令與設定檔格式。
+- [lean-lsp-mcp](https://github.com/oOo0oOo/lean-lsp-mcp)：本課程使用的本機 MCP 伺服器，把 Lean language server 的 proof state、diagnostics 等查詢提供給 agent。本課程只使用其本機工具。
+
+這三份資料對應 [第 6 章](../../chapters/06-agent-collaboration/) 與 [第 7 章](../../chapters/07-lean-tools/)。工具更新頻繁，若本站的指令與官方文件不一致，請以官方文件為準，並保持本課程的原則：本機執行、不使用 API key、不公開任何服務。
+
+## 影片觀看建議：AI101 系列
+
+AI101 頻道的系列影片（[播放清單](https://www.youtube.com/playlist?list=PLCKW73PRfmKo)）以中文介紹證明檢查、型別與邏輯的基本概念，可以作為本站前三章的補充。
+
+**說明**：以下推薦依據影片的標題與說明文字整理；本站未逐字核對影片內容，影片中的說法以影片本身為準。
+
+| 集數 | 標題 | 長度 | 建議搭配 |
+| --- | --- | --- | --- |
+| 1 | [電腦憑什麼說一個數學證明是對的？](https://www.youtube.com/watch?v=STMP2kFx3fw) | 9:21 | [第 1 章](../../chapters/01-first-proof/) |
+| 2 | [型別檢查到底在檢查什麼？](https://www.youtube.com/watch?v=N7SYYyZO2DU) | 14:45 | [第 2 章](../../chapters/02-propositions-as-types/)：型別與 context |
+| 3 | [你早就在用的推論規則](https://www.youtube.com/watch?v=aQP13mmH2mk) | 10:25 | [第 3 章](../../chapters/03-logic-and-quantifiers/)：自然演繹 |
+| 4 | [「推出」就是函數](https://www.youtube.com/watch?v=7k3qG68PdYQ) | 14:23 | [第 2 章](../../chapters/02-propositions-as-types/)：Curry–Howard |
+| 5 | [且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ) | 14:27 | [第 2 章](../../chapters/02-propositions-as-types/)、[第 3 章](../../chapters/03-logic-and-quantifiers/) |
+| 6 | [為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8) | 8:02 | [第 3 章](../../chapters/03-logic-and-quantifiers/)：constructive 與 classical |
+
+觀看第 6 集時，請搭配第 3 章「Constructive 與 classical」一節：在不使用 classical 公理時排中律無法構造出來，但 Lean 加入 `Classical.choice` 等標準公理後，排中律是可以使用的定理。
+
+## 建議的學習路徑
+
+1. 完成 [環境設定](../setup/)。
+2. 依序讀 [第 1 章](../../chapters/01-first-proof/) 到 [第 5 章](../../chapters/05-mathlib/)，穿插 [實戰 1](../../labs/01-proof-repair/)（第 3 章後）與 [實戰 2](../../labs/02-odd-sum/)（第 5 章後，可先手動）。
+3. 讀 [第 6 章](../../chapters/06-agent-collaboration/) 與 [第 7 章](../../chapters/07-lean-tools/)，再做 [實戰 3](../../labs/03-sum-of-squares/)。
+4. 讀 [第 8 章](../../chapters/08-project-audit/)，為你完成的實戰寫查核紀錄。
+5. 依興趣選擇 [進階 1：極限](../../advanced/01-limits/) 或 [進階 2：投影矩陣](../../advanced/02-projection/)。
+6. 之後繼續閱讀 Mathematics in Lean，挑選與你的課程相關的章節。

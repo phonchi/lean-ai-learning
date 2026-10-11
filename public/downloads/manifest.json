@@ -1,0 +1,27 @@
+{
+  "archive": "lean-ai-examples.zip",
+  "sha256": "7b35ef2864d285724f9145a62bffc758342da38612243713468c3354d8010057",
+  "file_count": 20,
+  "files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "Course/First.lean",
+    "Course/Induction.lean",
+    "Course/Limits.lean",
+    "Course/Logic.lean",
+    "Course/Mathlib.lean",
+    "Course/Projection.lean",
+    "Course/Squares.lean",
+    "Course.lean",
+    "Exercises/OddSum.lean",
+    "Exercises/ProofRepair.lean",
+    "Exercises/Squares.lean",
+    "Negative/FalseStatement.lean",
+    "Negative/TypeMismatch.lean",
+    "README.md",
+    "lake-manifest.json",
+    "lakefile.toml",
+    "lean-toolchain",
+    "mcp.example.json"
+  ]
+}

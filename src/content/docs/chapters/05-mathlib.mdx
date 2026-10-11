@@ -1,0 +1,153 @@
+---
+title: 第 5 章　使用 mathlib：搜尋與自動化
+description: 如何在 mathlib 中找到需要的引理、讀懂命名慣例，並正確使用 simp、ring、linarith、positivity 等自動化 tactic。
+sidebar:
+  order: 5
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 本章目標
+
+1. 理解 mathlib 是什麼，以及為什麼「先找再證」是形式化的基本工作方式。
+2. 會用命名慣例猜引理名稱，並用 `#check`、`exact?`、`apply?` 與線上搜尋工具確認。
+3. 知道 `simp`、`ring`、`linarith`、`nlinarith`、`positivity`、`norm_num` 各自擅長什麼、不擅長什麼。
+4. 在 AI 建議一個引理名稱時，知道如何驗證它存在、而且說的就是你要的事。
+
+## mathlib 是什麼
+
+mathlib 是 Lean 社群共同維護的數學函式庫，涵蓋代數、分析、拓撲、數論、線性代數等大量內容。課程專案已經把它設為依賴，所以檔案開頭的 `import Mathlib` 就能使用其中所有定義與定理。
+
+形式化數學時，大部分時間不是在發明新證明，而是在**找到正確的既有引理並把它接上**。紙上一句「由三角不等式」，在 Lean 中就是找到 mathlib 中對應的那條引理，並確認它的假設與你的情況相符。
+
+## 命名慣例：從名字猜內容
+
+mathlib 的引理名稱大致描述它的結論，由符號的英文名組成，順序與式子中出現的順序相近：
+
+- `mul_comm`：乘法交換律，`a * b = b * a`。
+- `add_pos`：兩個正數相加為正。
+- `sq_nonneg`：平方非負，`0 ≤ a ^ 2`。
+- `Finset.sum_range_succ`：range (n + 1) 上的和，等於拆出最後一項。
+- `abs_sub_lt_iff`、`le_of_lt` 這類名字中，`_of_` 後面接的是**假設**，前面是**結論**；`_iff` 表示雙向。
+
+猜名字只是第一步。猜到之後，**一定要 `#check`**：
+
+```lean
+#check sq_nonneg
+```
+
+Infoview 會顯示它的完整陳述。請確認變數的型別（在 `ℕ`、`ℤ`、`ℝ` 還是任意有序環上）、有哪些假設，以及結論的方向。
+
+## 讓 Lean 幫你找：`exact?` 與 `apply?`
+
+當你相信「這應該是 mathlib 裡的某條引理」，但不知道名字，可以在證明中寫：
+
+- `exact?`：搜尋一條能**直接關閉目前目標**的引理（可能配上手邊的假設）。找到時，Infoview 會建議一行 `exact ...`，點一下就能替換。
+- `apply?`：搜尋能套用到目前目標、可能留下一些子目標的引理。
+- `rw?`：搜尋可以用來改寫目前目標的等式。
+
+這些 tactic 在本機執行，搜尋可能需要數秒。它們找到的是**實際存在**的引理，所以比憑空猜名字可靠。找到之後，請把建議的那一行留在檔案中，而不是留下 `exact?` 本身。
+
+除此之外，mathlib 社群也維護線上文件與搜尋服務（例如 mathlib 的 API 文件與依型別樣式搜尋的工具），可以從 [Learning Lean 4](https://leanprover-community.github.io/learn.html) 頁面找到入口。
+
+## 自動化 tactic：各有專長
+
+下面是本課程最常用的自動化工具。關鍵不是記住它們，而是知道**它們能證明什麼樣的目標**，這樣才能在卡住時選對工具。
+
+| Tactic | 主要用途 | 使用時要注意 |
+| --- | --- | --- |
+| `simp` | 用一大批標記為簡化規則的等式反覆改寫，例如消掉 `x + 0`、展開空和 | 不保證終止於你想要的形式；不會自己找出非顯然的論證 |
+| `ring` | 交換環中的恆等式，例如 `(a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2` | 不會自行推理不等式，也不會展開有限和；先用其他引理整理求和 |
+| `linarith` | 主要從線性等式與不等式推得目標 | 會先正規化多項式，因而也能處理某些含乘積的恆等式；不能代替一般非線性推理 |
+| `nlinarith` | `linarith` 的延伸，會嘗試把假設相乘，能處理部分非線性情況 | 可能很慢或失敗；常需要你提供提示項 |
+| `positivity` | 依表達式結構證明非負或正性，例如平方、絕對值、正常數與它們的組合 | 能利用適當的局部非負／正性假設；不會解決任意不等式 |
+| `norm_num` | 具體數字的計算與比較，例如 `(2 : ℝ) / 4 = 1 / 2` | 一般含變數的代數 |
+
+`automation` 區段把幾個工具放在同一個檔案中示範：
+
+<LeanCode file="Course/Mathlib.lean" region="automation" />
+
+請一個個觀察：每個例子為什麼用**那一個** tactic？試著把 `ring` 換成 `linarith`，或把 `linarith` 換成 `ring`，觀察哪些仍成功、哪些失敗。不同工具的能力有重疊，不能只看式子裡有沒有乘號就斷定能否處理。
+
+## `simp` 的使用習慣
+
+`simp` 很強大，也很容易讓證明變得脆弱：mathlib 更新後，`simp` 的規則集可能改變，原本能過的證明可能不再通過。兩個好習慣：
+
+- 在證明中途使用 `simp` 時，可以先寫 `simp?`，它會告訴你實際用到了哪些規則，然後替換成 `simp only [...]` 的明確版本。
+- 用 `simp` 收尾（關閉目標）通常沒問題；在中途使用、之後還要接其他 tactic 時，才特別需要 `simp only`。
+
+## 自動化與數學理解
+
+`nlinarith` 能證明 `0 ≤ a ^ 2 + b ^ 2`，`positivity` 也能。但如果有人問你「為什麼這是對的」，你應該能說「因為兩個平方都非負，非負數相加仍非負」。自動化幫你省下寫出細節的力氣，**不能替代**你知道證明的骨架。
+
+這一點在與 AI 合作時特別重要。AI 很常在每一步都試 `simp`、`nlinarith`、`aesop` 之類的工具，碰到有一個能過就停下。這樣得到的證明是正確的（kernel 檢查過），但你可能完全不知道它為什麼成立。[第 8 章](../08-project-audit/) 的查核流程會要求你為每個定理寫一段數學說明。
+
+## 驗證 AI 建議的引理
+
+AI 給出的引理名稱有時並不存在，有時存在但陳述和它描述的不同（例如假設不同、方向相反、或只對 `ℕ` 而非 `ℝ` 成立）。標準處理流程：
+
+1. `#check 名稱`：若顯示 unknown identifier，先確認所需的 `import`、命名空間與完整名稱；排除這些原因後，再判斷名稱可能不存在，改用 `exact?` 或搜尋。
+2. 若存在，讀它的陳述，確認型別與假設符合。
+3. 實際用它推進一步，看 Infoview 的目標是否變成你預期的樣子。
+
+## 練習
+
+### 練習 5.1　選對工具
+
+對以下每個目標，選出最合適的 tactic，並在 Lean 中驗證：
+
+```lean
+example (a b : ℝ) : (a - b) * (a + b) = a ^ 2 - b ^ 2 := by sorry
+example (x y : ℝ) (h1 : x ≤ y) (h2 : y ≤ 3) : x ≤ 3 := by sorry
+example (x : ℝ) : 0 ≤ x ^ 2 + 1 := by sorry
+```
+
+<details>
+<summary>提示</summary>
+
+第一個是純代數恆等式，沒有用到任何假設。第二個由兩個線性不等式推出。第三個是「平方加正數」的非負性。
+
+</details>
+
+<details>
+<summary>解答</summary>
+
+依序是 `ring`、`linarith`、`positivity`。第三個用 `nlinarith [sq_nonneg x]` 也可以，但 `positivity` 更直接。在本課程固定版本中，第一個也能用 `linarith` 完成，因為正規化後等式兩邊相同；`ring` 更直接表達「這是交換環恆等式」的理由。
+
+</details>
+
+### 練習 5.2　找引理
+
+在 `ℝ` 上，「若 0 ≤ a 且 0 ≤ b，則 0 ≤ a + b」在 mathlib 中叫什麼名字？用兩種方法找：先猜名字並 `#check`，再在一個 `example` 中用 `exact?` 驗證。
+
+<details>
+<summary>提示</summary>
+
+結論是「加法的非負」：`add_` 加上非負的英文縮寫。
+
+</details>
+
+<details>
+<summary>解答</summary>
+
+`add_nonneg`。`#check add_nonneg` 會顯示它在一般的有序結構上成立，`ℝ` 是其特例。`exact?` 對目標 `0 ≤ a + b`（手上有兩個非負假設）通常也會找到它。
+
+</details>
+
+### 練習 5.3　判斷 AI 的說法
+
+AI 回答：「用 `ring` 就能從 `h : x = 2` 證明 `x ^ 2 = 4`。」這說法對嗎？如果不對，該怎麼做？
+
+<details>
+<summary>解答</summary>
+
+不對。`ring` 不使用假設，而 `x ^ 2 = 4` 並不是恆等式。可以先 `rw [h]` 把 x 換成 2，再用 `norm_num` 計算。也可以 `subst h` 後 `norm_num`。這個例子說明：AI 對 tactic 能力的描述需要實際驗證。
+
+</details>
+
+## 延伸閱讀
+
+- [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 的「Basics」一章，系統介紹 `rw`、`ring`、`linarith` 與如何使用 mathlib 中的引理。
+- [Learning Lean 4](https://leanprover-community.github.io/learn.html) 中列出的 mathlib 文件與搜尋資源。
+- 實作：[實戰 3：實數列表的平方和](../../labs/03-sum-of-squares/) 會大量使用本章的搜尋技巧。
+- 下一章：[和 AI agent 協作](../06-agent-collaboration/)。

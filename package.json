@@ -1,0 +1,29 @@
+{
+  "name": "lean-ai-learning",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "build": "node scripts/prepare-examples.mjs && astro build",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "verify:lean": "python3 scripts/verify_lean.py"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "7.3.2",
+    "@astrojs/mdx": "8.0.3",
+    "@astrojs/starlight": "0.42.6",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/noto-serif-tc": "5.3.0",
+    "astro": "7.3.8",
+    "katex": "0.19.0",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.64.0",
+    "typescript": "6.0.3"
+  }
+}

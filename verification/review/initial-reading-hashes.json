@@ -1,0 +1,17 @@
+{
+  "chapters/01-first-proof.mdx": "89f16e223a9fc2e1cca00e1a4100e4dff724648bae531e928a2892a13d1d94b7",
+  "chapters/02-propositions-as-types.mdx": "02cdf77a6fcd6796f77f5ba3ea5a0230d265b9da90159938f9c5d2b30d73b3ce",
+  "chapters/03-logic-and-quantifiers.mdx": "fa3fab98e831d26db57e2c9fe7d62ee6d14e832f8440a7962af147040eb20fee",
+  "chapters/04-induction-and-sums.mdx": "26b6f5caa61812b9e55ba1024f0e90ff0ba7467bbc980faf03cef5064a176f45",
+  "chapters/05-mathlib.mdx": "8166e7fc2d61008f9bf17a8bea5cba868ec2ea4e1c70bf43a795cdbe674e8cdd",
+  "chapters/06-agent-collaboration.mdx": "4c622c9ccf6a2ceea12406fb78a8ee43fb94581bae685fba3ae3a02b5e5706c0",
+  "chapters/07-lean-tools.mdx": "f66478d2259ae43979afc4d90561d731fad2b74f3e2c1162ed8860e632e877d0",
+  "chapters/08-project-audit.mdx": "5fc1427891f25aeec82cfee4840c22c04e7e92ef82a4e015af50911d92fdfbe6",
+  "labs/01-proof-repair.mdx": "f52ea1ef63121f89253c02f5ca0c6abcffe3604b312b25f6d7a237b99cb96bca",
+  "labs/02-odd-sum.mdx": "5b7863bc0dc458e33f07f18488a35731315dcd49d84f86fc2563fc97622026e7",
+  "labs/03-sum-of-squares.mdx": "3cbd69f8c72cbd88456fdec4cbb81e1548874e6efcd99fc109b995bf23e2cb6a",
+  "advanced/01-limits.mdx": "6e36353c5add328f1a866cc7c0e0cd468037f285235f560fa9c21943df2f0b57",
+  "advanced/02-projection.mdx": "16828d23788c9ffe7b1d77193f14d828c83cb4ba4b397142cf60ebc53f2f084b",
+  "guides/setup.mdx": "58ce1d501c1a9cd51a43e815ddb3e7ab0b02267523806b484b52f511503b0eb2",
+  "guides/resources.mdx": "2be8ad5ee37be66b686f892d1c456edc5b470216cc9be6c5167461a6383e33c7"
+}

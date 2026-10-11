@@ -1,0 +1,5 @@
+{
+  "ProofRepair.lean": "-- 學生練習：只填寫證明，保留命題與前提。\nnamespace Exercises\ntheorem imp_trans (P Q R : Prop) (hPQ : P → Q) (hQR : Q → R) : P → R := by\n  sorry\nend Exercises\n",
+  "OddSum.lean": "import Mathlib.Algebra.BigOperators.Ring.Finset\nimport Mathlib.Tactic.Ring\n-- 學生練習：索引從 0 起算，共 n 項。\nnamespace Exercises\ntheorem odd_sum (n : ℕ) : ∑ k ∈ Finset.range n, (2 * k + 1) = n ^ 2 := by\n  sorry\nend Exercises\n",
+  "Squares.lean": "import Course.Squares\n-- 學生練習：請用歸納法，勿直接引用正式答案。\nnamespace Exercises\ntheorem squares_zero (xs : List ℝ) : Course.squareSum xs = 0 ↔ ∀ x ∈ xs, x = 0 := by\n  sorry\nend Exercises\n"
+}

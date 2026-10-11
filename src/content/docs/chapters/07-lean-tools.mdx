@@ -1,0 +1,189 @@
+---
+title: 第 7 章　本機 Lean 工具與受限迴圈
+description: 透過本機 stdio 執行的 lean-lsp-mcp，讓 Claude Code 或 Codex 直接讀取 proof state 與 diagnostics，並以明確的輪數與規則限制修復迴圈。
+sidebar:
+  order: 7
+---
+
+## 本章目標
+
+1. 理解 Lean 的 language server（LSP）與 MCP 的關係：agent 能看到的，就是你在 Infoview 看到的。
+2. 在專案根目錄為 Claude Code 或 Codex 設定本機 `lean-lsp-mcp`，不需要任何公開服務或 API key。
+3. 只使用「讀 goal」與「讀 diagnostics」這類本機工具，建立一個最多 3 輪的受限修復迴圈。
+4. 為每次迴圈留下可查核的紀錄。
+
+## 為什麼需要它
+
+上一章主要依靠 `lake env lean Exercises/檔名.lean` 的終端診斷。這種流程能檢查完整檔案，但不會自動把游標所在位置的 proof state 交給 agent。你可以手動貼上 Infoview，也可以透過本章的工具，讓 agent 直接查詢指定位置的目標與診斷。
+
+VS Code 之所以能顯示 Infoview，是因為它在背後啟動了 Lean 的 **language server**，並透過 Language Server Protocol（LSP）詢問「這一行的目標是什麼」「這個檔案有哪些錯誤」。`lean-lsp-mcp` 做的事情很單純：把這些 LSP 查詢包裝成 **MCP**（Model Context Protocol）工具，讓 agent 也能呼叫。
+
+## stdio：只在你的電腦上執行
+
+MCP 伺服器有幾種連線方式。本課程只使用 **stdio**：agent 把 `lean-lsp-mcp` 當成一個子程序在本機啟動，透過標準輸入／輸出交換訊息。這代表：
+
+- 不開任何網路埠，不需要把服務公開到網路上。
+- 不需要 API key，也不需要額外的雲端設定。
+- 它讀取的就是你本機的課程專案與 Lean 安裝。
+
+這個套件以 Python 發布，課程使用 `uvx` 執行固定版本 `0.31.0`。`uvx` 是 Python 工具 uv 提供的指令，會自動在使用者層級的快取中準備好執行環境，不需要系統管理員權限或安裝系統套件。如果你還沒有 uv，請依 [環境設定](../../guides/setup/) 中的說明準備；若暫時無法使用，可以直接跳到本章的「手動迴圈」一節。
+
+`lean-lsp-mcp` 也提供一些會連線到外部搜尋服務的工具；本課程不需要它們，只使用讀取本機 proof state 與 diagnostics 的工具。
+
+## 設定：Claude Code
+
+**在課程專案根目錄**執行：
+
+```bash
+claude mcp add --transport stdio --scope project lean-lsp -- uvx lean-lsp-mcp==0.31.0
+```
+
+`--scope project` 讓這個設定寫入專案根目錄下的 `.mcp.json`，只對這個專案生效，不影響你其他的專案。之後在同一目錄執行 `claude`，第一次使用專案層級的 MCP 伺服器時，Claude Code 會請你確認是否信任它。啟動後可以在 Claude Code 中輸入 `/mcp` 查看 `lean-lsp` 是否已連線。
+
+## 設定：Codex CLI
+
+Codex 有兩種方式，擇一即可。
+
+**方式一：用指令新增。**
+
+```bash
+codex mcp add lean-lsp -- uvx lean-lsp-mcp==0.31.0
+```
+
+請注意：這個指令通常會把設定寫入你**使用者層級**的 Codex 設定檔（位於家目錄下的 `.codex/config.toml`），也就是說它會對你所有的專案生效。如果你只想在課程中使用，請改用方式二。
+
+**方式二：專案層級的設定檔。** 在課程專案根目錄建立 `.codex/config.toml`（若此檔已存在，請**加入**下列段落，不要覆蓋原有內容）：
+
+```toml
+[mcp_servers.lean-lsp]
+command = "uvx"
+args = ["lean-lsp-mcp==0.31.0"]
+```
+
+Codex 只會在你信任該專案目錄時讀取專案層級的設定；第一次在此目錄啟動 `codex` 時，請依提示確認。啟動後同樣可用 `/mcp` 確認伺服器狀態。
+
+無論使用哪一種工具，都請**從專案根目錄啟動**，伺服器才會以這個 Lean 專案為工作目錄。第一次啟動前先執行過 `lake build`，可以避免伺服器在啟動時因為等待建置而逾時。
+
+## agent 會用到的兩類工具
+
+伺服器啟動後，agent 可以看到一組工具（可在 `/mcp` 中查看完整清單）。本課程只需要以下兩個：
+
+- **`lean_goal`**（讀 goal）：給定檔案與位置，回傳該處的 proof state，就是你在 Infoview 看到的內容。
+- **`lean_diagnostic_messages`**（讀 diagnostics）：回傳檔案中所有錯誤、警告（包括 `sorry` 警告）與它們的位置。
+
+本課程固定版本的工具名稱與參數如下，`file_path` 相對於 Lean 專案根目錄，`line` 從 1 開始：
+
+| 工具 | 呼叫參數範例 | 要讀的內容 |
+| --- | --- | --- |
+| `lean_goal` | `{"file_path":"Exercises/ProofRepair.lean","line":4}` | 指定位置的目標，特別是 `goals_before` |
+| `lean_diagnostic_messages` | `{"file_path":"Exercises/ProofRepair.lean"}` | 錯誤、警告，以及是否還在處理檔案 |
+
+原始練習第 4 行是 `sorry`。在該行查詢時，`goals_before` 包含 `⊢ P → R`，但 `goals_after` 可能已是空陣列，因為 `sorry` 暫時填掉了目標。**空目標不代表證明完成**：此時 diagnostics 仍會指出 `declaration uses sorry`。必須連同診斷與公理依賴一起查核。若你已改過檔案，先確認實際行號，再查詢對應位置。
+
+有了這兩者，agent 的每一步就可以變成：讀目標 → 寫一步 → 讀 diagnostics → 讀新目標。這和你在第 1 章學的節奏完全相同，只是換成 agent 來做。
+
+## 受限迴圈：規則
+
+工具越方便，越需要明確的規則。本課程的受限迴圈如下：
+
+1. **範圍固定**：只處理指定的一個 `sorry`，只能修改它所在的證明內容。
+2. **陳述不可變**：不得修改 theorem statement、名稱、假設、任何 `def`；不得新增 `axiom`、`sorry`、`admit`。
+3. **輪數上限**：一輪＝一次修改＋一次讀 diagnostics。最多 3 輪。
+4. **每輪先讀再改**：每輪開始時必須先讀該處的 goal，並用一句話說明目標的數學意義。
+5. **停止條件**：(a) diagnostics 中該定理不再有錯誤與 `sorry` 警告；(b) 已達 3 輪；(c) 判斷陳述可能為假。任何一個發生就停止並回報。
+6. **回報實際輸出**：最後一輪的 diagnostics 原文必須貼出，不可只寫「通過」。
+7. **最終驗收在終端機**：迴圈結束後，由你在專案根目錄執行 `lake env lean Exercises/檔名.lean`，記下完整輸出與 exit code。diagnostics 乾淨是好的跡象，但驗收以這個指令的實際結果為準；`lake build` 不會檢查 `Exercises/`，不能用來驗收練習。
+
+可以把下面這段加在第 6 章的 Prompt 範本之後：
+
+```text
+你可以使用 lean-lsp MCP 工具。每一輪請：
+(1) 用 lean_goal 查看 sorry 所在位置的 proof state，並用一句話說明數學意義；
+(2) 修改證明；
+(3) 用 lean_diagnostic_messages 查看該檔案的錯誤與警告。
+請只使用 lean_goal 與 lean_diagnostic_messages 這類本機工具，不要使用外部搜尋工具。
+最多 3 輪。每一輪結束時，列出：輪次、修改內容、diagnostics 原文。
+結束後執行 lake env lean Exercises/檔名.lean，貼出完整輸出與 exit code。
+```
+
+## 迴圈紀錄
+
+每次執行受限迴圈，都留下一份紀錄。以下是**空白範本**，每一欄都要填入你實際看到的內容：
+
+```text
+任務：［檔案路徑與定理］
+工具：［Claude Code / Codex / 手動］
+第 1 輪
+  讀到的 goal：［複製］
+  agent 對 goal 的數學說明：［複製］
+  修改：［差異］
+  diagnostics：［原文複製］
+第 2 輪 ...
+第 3 輪 ...
+結果：［完成 / 達上限停止 / 判斷陳述可能為假］
+最終驗收：lake env lean Exercises/［檔名］.lean 的完整輸出與 exit code
+我的檢查：git diff 是否只動證明？#print axioms 輸出？
+我的數學說明：［自己寫，不可複製 agent］
+```
+
+這份紀錄不是形式要求：當結果不如預期時，它是唯一能讓你（或助教）判斷問題出在哪一輪的依據。
+
+## 手動迴圈
+
+沒有 agent 帳號，或 MCP 暫時無法運作時，你可以手動執行完全相同的迴圈：「讀 goal」就是把游標放到該處、複製 Infoview；「讀 diagnostics」就是複製 VS Code 問題面板中的 Lean 訊息。規則與紀錄範本不變。事實上，建議每位同學至少手動做一次，才會清楚 agent 在每一輪「應該」看到什麼。
+
+## 練習
+
+### 練習 7.1　確認連線
+
+依你使用的工具完成設定，啟動後用 `/mcp` 確認 `lean-lsp` 已連線。接著請 agent 只做一件事：讀出 `Course/First.lean` 中某一行的 goal，並與你在 Infoview 中看到的內容比對。
+
+<details>
+<summary>提示</summary>
+
+若伺服器顯示未連線，先確認：是否在專案根目錄啟動？終端機中直接執行 `uvx lean-lsp-mcp==0.31.0` 是否能啟動（它會等待輸入，按 Ctrl+C 結束即可）？專案是否已經 `lake build` 過？
+
+</details>
+
+<details>
+<summary>參考做法</summary>
+
+兩者內容應一致（格式可能略有不同）。如果 agent 回報的 goal 與 Infoview 不同，最常見的原因是行號差了一行，或檔案尚未存檔。
+
+</details>
+
+### 練習 7.2　受限迴圈
+
+以受限迴圈規則，請 agent 處理下一個練習檔 `Exercises/OddSum.lean` 的 `sorry`，並填寫完整的迴圈紀錄。如果你在練習 6.3 已經親手完成了這個檔案，請先把你的版本另存到專案外，再從原始下載的壓縮檔重新取出原檔，不要讓 agent 直接蓋掉你的成果。
+
+<details>
+<summary>提示</summary>
+
+比較這次與第 6 章的經驗：agent 是否較少「盲目嘗試」？它在每輪開頭對 goal 的數學說明是否正確？
+
+</details>
+
+<details>
+<summary>參考做法</summary>
+
+紀錄中 agent 對 goal 的說明，請你逐一判斷對錯並註記。即使最後證明通過，說明錯誤仍然值得記錄：它代表你不能依賴這個 agent 的解釋來學習那一部分。
+
+</details>
+
+### 練習 7.3　停止條件
+
+如果第 3 輪結束時仍有錯誤，正確的下一步是什麼？
+
+<details>
+<summary>解答</summary>
+
+停止，保存紀錄，然後由你自己回到數學：這個目標在紙上怎麼證？是否缺少某條引理？陳述是否真的成立？讓 agent 繼續「再試一次」通常只會產生更難讀懂的嘗試。若重新理解後要再開始一次新的 3 輪迴圈，應在紀錄中寫明你改變了什麼想法。
+
+</details>
+
+## 延伸閱讀
+
+- 官方文件：[Claude Code 的 MCP 設定](https://code.claude.com/docs/en/mcp)、[Codex 的 MCP 設定](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)。
+- 工具本身：[lean-lsp-mcp](https://github.com/oOo0oOo/lean-lsp-mcp)。
+- 實作：[實戰 2](../../labs/02-odd-sum/) 與 [實戰 3](../../labs/03-sum-of-squares/) 會使用本章的受限迴圈。
+- 下一章：[專題查核](../08-project-audit/)。

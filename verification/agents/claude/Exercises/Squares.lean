@@ -1,0 +1,20 @@
+import Course.Squares
+-- 學生練習：請用歸納法，勿直接引用正式答案。
+namespace Exercises
+theorem squares_zero (xs : List ℝ) : Course.squareSum xs = 0 ↔ ∀ x ∈ xs, x = 0 := by
+  induction xs with
+  | nil => simp [Course.squareSum]
+  | cons x xs ih =>
+    have hs : 0 ≤ Course.squareSum xs := Course.squares_nonneg xs
+    have hsum : Course.squareSum (x :: xs) = x ^ 2 + Course.squareSum xs := rfl
+    rw [hsum]
+    simp only [List.forall_mem_cons]
+    constructor
+    · intro h
+      have hx2 : x ^ 2 = 0 := by linarith [sq_nonneg x]
+      have ht : Course.squareSum xs = 0 := by linarith [sq_nonneg x]
+      exact ⟨sq_eq_zero_iff.mp hx2, ih.mp ht⟩
+    · rintro ⟨hx, hxs⟩
+      rw [hx, ih.mpr hxs]
+      norm_num
+end Exercises

@@ -1,0 +1,171 @@
+---
+title: 第 2 章　命題為何是型別
+description: 從「證明就是一個值」理解 Lean：proof term、蘊含即函數、tactic 如何產生 term，以及 kernel 到底檢查什麼。
+sidebar:
+  order: 2
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 本章目標
+
+1. 理解 Lean 的核心想法：**命題是型別，證明是該型別的值**。
+2. 能把 `p → q` 讀成「把 p 的證明變成 q 的證明的函數」，並用 `fun` 寫出簡單的 proof term。
+3. 知道 tactic 證明最後也會變成一個 term，由 kernel 檢查。
+4. 能說清楚 kernel 檢查了什麼、**沒有**檢查什麼。
+
+## 從程式的型別說起
+
+如果你寫過程式，你見過這種句子：「`3` 的型別是整數」、「`"abc"` 的型別是字串」。在 Lean 中寫作：
+
+```lean
+#check (3 : ℕ)        -- 3 : ℕ
+#check fun (n : ℕ) => n + 1   -- ℕ → ℕ
+```
+
+`ℕ → ℕ` 是「從自然數到自然數的函數」這個型別。**型別檢查**就是確認每個值都被用在它的型別允許的地方：你不能把字串當成函數呼叫，也不能把一個 `ℕ → ℕ` 的函數套用到一個實數上。
+
+Lean 把這套機制推到邏輯上：
+
+| 程式世界 | 邏輯世界 |
+| --- | --- |
+| 型別 `T` | 命題 `P` |
+| 型別 `T` 的一個值 `t : T` | 命題 `P` 的一個證明 `h : P` |
+| 型別有值（inhabited） | 命題被證明 |
+| 函數型別 `A → B` | 蘊含 `P → Q` |
+
+所以當我們在 Lean 中寫 `hp : p`，意思是「`hp` 是命題 `p` 的一個證明」；寫 `theorem foo : P := 證明`，是在宣告「我造出了一個型別為 `P` 的值」。Lean 要檢查的，就是這個值的型別真的是 `P`。這種對應通常稱為 **Curry–Howard 對應**。
+
+## 蘊含就是函數
+
+數學上，「若 p 則 q」的證明是什麼？是一個方法：只要你給我一個 p 的證明，我就能造出 q 的證明。這正好就是一個函數的描述。
+
+因此在 Lean 中，命題 `p → q` 的證明，就是一個型別為 `p → q` 的函數。看一個例子：
+
+```lean
+example (p : Prop) : p → p := fun hp => hp
+```
+
+「p 推出 p」的證明，就是恆等函數：拿到 `hp : p`，原封不動交回去。
+
+再看「蘊含的遞移性」：若 `p → q` 且 `q → r`，則 `p → r`。數學上的證明是：「假設 p，用第一個條件得到 q，再用第二個條件得到 r。」用函數的語言說：**把兩個函數合成**。課程中的 `imp-trans` 區段同時展示了這個想法：
+
+<LeanCode file="Course/Logic.lean" region="imp-trans" />
+
+閱讀時請把每個假設名字念成「某某的證明」。例如 `hPQ : P → Q` 念作「hPQ 是一個把 P 的證明變成 Q 的證明的函數」。`intro hP` 之後，`hPQ hP` 就是把函數套用在 `hP` 上，得到一個 `Q` 的證明；再把 `hQR` 套用上去，`hQR (hPQ hP)` 就是 `R` 的證明，正好是兩個函數的合成。
+
+## 「且」是一對證明
+
+`p ∧ q` 的證明是什麼？是一個 p 的證明**和**一個 q 的證明，配成一對。Lean 用角括號寫一對：
+
+```lean
+example (p q : Prop) (hp : p) (hq : q) : p ∧ q := ⟨hp, hq⟩
+```
+
+反過來，如果手上有 `h : p ∧ q`，可以用 `h.1` 取出 `p` 的證明、`h.2` 取出 `q` 的證明（也可以寫 `h.left`、`h.right`）。
+
+其他邏輯符號也各有對應，[第 3 章](../03-logic-and-quantifiers/) 會詳細練習：
+
+- `p ∨ q`：要嘛帶著一個 `p` 的證明（`Or.inl`），要嘛帶著一個 `q` 的證明（`Or.inr`）。
+- `False`：沒有任何值的型別，也就是無法被證明的命題。
+- `¬ p`：在 Lean 中就**定義**為 `p → False`，「若 p 成立就能造出矛盾」。
+
+## Tactic 其實在幫你造 term
+
+[第 1 章](../01-first-proof/) 用的 tactic 證明看起來像一串指令，和「寫出一個值」似乎不一樣。實際上，每個 tactic 都在逐步拼出一個 proof term：
+
+- `intro hp`：相當於在 term 外面包一層 `fun hp => ...`。
+- `exact t`：直接把 term `t` 填進目前目標的洞。
+- `constructor`（對 `∧`）：相當於先寫下 `⟨_, _⟩`，留下兩個洞，各自成為新目標。
+- `apply f`：相當於寫下 `f _`，把 `f` 的前提變成新目標。
+
+`first-term` 區段的 term 寫法，和 `first-proof` 的 tactic 寫法，最後都變成同一種東西：
+
+<LeanCode file="Course/First.lean" region="first-term" />
+
+你可以用 `#print 定理名稱` 看 Lean 內部保存的 term。它通常比你寫的 tactic 冗長，但結構是可辨認的。
+
+## Kernel 檢查什麼？
+
+Lean 處理一個證明時，大致分兩層：
+
+1. **Elaborator**（展開器）：讀你寫的程式碼，推斷省略的型別、執行 tactic、展開記號，產生一個完整的 term。這一層很複雜，也是自動化工具（`simp`、`ring` 等）所在的地方。
+2. **Kernel**（核心）：只做一件事：確認這個 term 的型別確實是你宣告的命題。Kernel 刻意保持小而簡單，這樣人們才能相信它。
+
+這個分工的意義是：tactic 再複雜、甚至 tactic 本身有 bug，只要最後的 term 通過 kernel，結論就是可信的。AI 寫出的 tactic 證明也一樣：**你不需要信任 AI，也不需要信任 tactic，只需要信任 kernel**。
+
+但請把 kernel 能保證的事說精確：
+
+- 它保證：**這個 term 的型別是這個陳述**，而且只用到 `#print axioms` 列出的公理。
+- 它不保證：這個陳述就是你心中的數學命題。如果陳述寫錯（例如少了一個量詞、型別選錯、多了一個不合理的假設），kernel 仍會愉快地接受一個正確的「錯題」證明。
+
+這也是為什麼 `sorry` 能通過編譯：`sorry` 在內部是引用一個叫 `sorryAx` 的公理，型別上什麼都能造出來。Kernel 不會拒絕公理，它只會誠實地把依賴記錄下來，所以要用 `#print axioms` 查看。
+
+<LeanCode file="Course/First.lean" region="first-check" />
+
+## Prop 與 Type
+
+你可能注意到變數宣告寫的是 `(p : Prop)`。`Prop` 是「所有命題」所成的型別，`ℕ`、`ℝ` 則屬於 `Type`。兩者一個重要差異：在 `Prop` 中，Lean 只在乎「有沒有證明」，不在乎「是哪一個證明」。兩個同一命題的證明被視為相等。對數學工作而言，這符合直覺：我們關心定理是否成立，而不是證明的長相。
+
+## AI 協作的小練習
+
+請 AI 把一個 tactic 證明「翻譯」成 term 證明，是一個很好的練習，因為**你能用 Lean 驗證它的答案**。但請在 Prompt 中要求它解釋每個 `fun` 與套用分別對應哪個數學步驟，然後自己檢查解釋是否合理。如果 AI 給的 term 無法通過檢查，不要只把錯誤訊息丟回去，先試著讀懂：哪個值的型別不對？
+
+## 練習
+
+### 練習 2.1　寫出恆等之外的函數
+
+寫出以下命題的 term 證明（不使用 `by`）：
+
+```lean
+example (p q : Prop) : p → q → p := sorry
+```
+
+<details>
+<summary>提示</summary>
+
+這是一個「接收兩個參數」的函數：先收到 p 的證明，再收到 q 的證明，最後要交出 p 的證明。哪個參數剛好是答案？
+
+</details>
+
+<details>
+<summary>解答</summary>
+
+`fun hp _ => hp`。第二個參數用不到，所以用 `_` 命名。數學上的意思是：「若已知 p，則無論 q 如何，p 都成立。」
+
+</details>
+
+### 練習 2.2　交換「且」
+
+寫出 `p ∧ q → q ∧ p` 的 term 證明。
+
+<details>
+<summary>提示</summary>
+
+這是一個函數：輸入 `h : p ∧ q`，輸出一對。新的一對的第一個分量是 `q` 的證明，可以從 `h` 的哪個分量取得？
+
+</details>
+
+<details>
+<summary>解答</summary>
+
+`fun h => ⟨h.2, h.1⟩`。[第 3 章](../03-logic-and-quantifiers/) 的 `and-swap` 區段用 tactic 寫同一件事，可以對照閱讀。
+
+</details>
+
+### 練習 2.3　說出 kernel 的保證
+
+某位同學說：「AI 給的證明通過了 Lean，所以我的作業一定是對的。」請用兩三句話說明這句話缺了什麼。
+
+<details>
+<summary>參考答案</summary>
+
+通過 Lean 只保證證明了「檔案中寫的陳述」，而且依賴的公理就是 `#print axioms` 列出的那些。還需要確認：(1) 沒有 `sorryAx` 或自訂公理；(2) Lean 陳述忠實翻譯了作業原題，包括量詞、型別與假設；(3) AI 沒有為了讓證明通過而修改陳述。
+
+</details>
+
+## 延伸閱讀與觀看
+
+- [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Propositions and Proofs」一章，是本章內容最直接的延伸。
+- 觀看建議（AI101 系列，本站僅依標題與說明推薦，未逐字核對）：第 2 集〈[型別檢查到底在檢查什麼？](https://www.youtube.com/watch?v=N7SYYyZO2DU)〉、第 4 集〈[「推出」就是函數](https://www.youtube.com/watch?v=7k3qG68PdYQ)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉。
+- 下一章：[邏輯與量詞](../03-logic-and-quantifiers/)。

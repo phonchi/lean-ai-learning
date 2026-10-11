@@ -1,0 +1,4 @@
+Matrix.mulVec.{v, u_2, u_3} {m : Type u_2} {n : Type u_3} {α : Type v} [NonUnitalNonAssocSemiring α] [Fintype n]
+  (M : Matrix m n α) (v : n → α) : m → α
+dotProduct.{v, u_2} {m : Type u_2} {α : Type v} [Fintype m] [Mul α] [AddCommMonoid α] (v w : m → α) : α
+Fin.sum_univ_two.{u_2} {M : Type u_2} [AddCommMonoid M] (f : Fin 2 → M) : ∑ i, f i = f 0 + f 1

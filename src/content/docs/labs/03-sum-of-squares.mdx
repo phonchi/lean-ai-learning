@@ -1,0 +1,176 @@
+---
+title: 實戰 3　實數列表的平方和
+description: 以已提供的平方和非負引理為基礎，用歸納法證明實數列表的平方和為零若且唯若每個元素為零；由 agent 在受限迴圈中修改，你負責翻譯檢查、邊界情況與最終查核。
+sidebar:
+  order: 3
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 這次實戰的定位
+
+這是三次實戰中 AI 自主程度最高的一次：**agent 在 [第 7 章](../../chapters/07-lean-tools/) 的受限迴圈中自行修改證明**。你不逐步審核每個 tactic，而是負責三件 agent 不能替你做的事：
+
+1. 動手前的翻譯檢查與邊界情況分析；
+2. 設定迴圈並監督停止條件；
+3. 結束後依 [第 8 章](../../chapters/08-project-audit/) 完成查核。
+
+沒有 agent 帳號的同學，請以手動迴圈完成同樣的任務，紀錄格式相同。
+
+## 數學內容
+
+設 x₁, x₂, ..., xₙ 是實數（可以重複，順序有意義）。考慮平方和 S = x₁² + x₂² + ... + xₙ²。
+
+**命題一**：S ≥ 0。理由：每一項平方都非負，非負數之和非負。
+
+**命題二**：S = 0 若且唯若每個 xᵢ = 0。
+
+- 「若」的方向：每項都是 0，平方和當然是 0。
+- 「唯若」的方向：假設 S = 0。對任一個 xⱼ，有 0 ≤ xⱼ² ≤ S = 0，因為其他各項都非負。所以 xⱼ² = 0，進而 xⱼ = 0。
+
+命題二的關鍵是一個一般原則：**一群非負數的和為零，若且唯若每一個都是零**。這個原則對實數成立，因為實數有序，非負數相加不會「抵銷」。注意命題二的證明**用到**命題一：要知道「其他各項之和」非負。
+
+在本次實戰中，**命題一已經提供**，是你可以直接使用的輔助引理；**命題二才是待完成的練習**。
+
+## Lean 中的寫法：定義與已提供的引理
+
+在 Lean 中，用 `List ℝ` 表示這串實數。課程專案在 `Course/Squares.lean` 中定義了平方和 `Course.squareSum`：先用 `List.map` 把每個元素平方，再用 `List.sum` 加總。同一個區段也證明了命題一 `Course.squares_nonneg`：
+
+<LeanCode file="Course/Squares.lean" region="squares-nonneg" />
+
+這一段是**閱讀題**，請回答：
+
+1. `squareSum` 的定義是否忠實於「每個元素的平方之和」？空列表時它等於多少？
+2. 命題一的證明對列表做歸納。`cons` 情況中，`change` 那一行把目標改寫成什麼？為什麼這樣改寫是合法的（提示：`map` 與 `sum` 在 `x :: xs` 上展開的結果）？
+3. `add_nonneg (sq_nonneg x) ih` 對應數學上的哪一句話？
+
+## 練習檔
+
+<LeanCode file="Exercises/Squares.lean" />
+
+檔案中只有一個待完成的定理：命題二，以 `Course.squareSum xs = 0 ↔ ∀ x ∈ xs, x = 0` 表示。檔案註解要求用歸納法。課程範例中有一個同名的參考證明 `Course.squares_zero`，**不可以直接引用它**；但可以使用 `Course.squareSum` 的定義與 `Course.squares_nonneg`。
+
+## 第一步：翻譯檢查與邊界情況（你自己做）
+
+### 為什麼用 `List` 而不是 `Finset`
+
+`Finset` 是**集合**，同一個元素只出現一次；`List` 保留重複與順序。原題說的是「一串實數」，例如 1, 1, −1 是三個數，平方和是 3。如果用 `Finset`，重複的 1 只會算一次，平方和只剩 2。所以 `List` 才忠實於原題。
+
+### 空列表
+
+當 `xs` 是空列表 `[]` 時：
+
+- 平方和是空和，等於 0。命題一成立。
+- 「每個元素為零」是 `∀ x ∈ [], x = 0`，由於空列表沒有元素，這個敘述**空虛地為真**（vacuously true）。
+- 所以命題二在空列表時是「0 = 0 若且唯若 真」，成立。
+
+這和數學上的約定一致。請確認你同意這一點，再繼續。這也是歸納法的基底情況。
+
+### 重複值與零
+
+- `[0, 0, 0]`：平方和 0，所有元素為 0，命題二兩邊皆真。
+- `[1, -1]`：平方和 2，不是所有元素為 0，兩邊皆假。注意 1 + (−1) = 0，但平方和不是 0，這正是「平方」的作用。
+- `[0, 2]`：平方和 4，兩邊皆假。
+
+這些都只是檢查，不是證明。
+
+## 第二步：設定受限迴圈
+
+在專案根目錄啟動已設定好 `lean-lsp` 的 Claude Code 或 Codex，使用第 6 章的 Prompt 範本（把檔名換成 `Exercises/Squares.lean`、定理換成 `squares_zero`），加上第 7 章的 MCP 段落。這次可以額外給 agent 一段數學提示，因為**由你提供數學骨架**能大幅降低 agent 盲目嘗試的機會：
+
+```text
+數學提示：
+- 對 xs 歸納（空列表與 x :: xs 兩種情況）。
+- x :: xs 的平方和等於 x ^ 2 + Course.squareSum xs（依定義展開）。
+- 可以使用 Course.squares_nonneg xs（尾端平方和非負）與 sq_nonneg x。
+  兩個非負數之和為零，則兩者皆為零。
+- 再用 x ^ 2 = 0 推出 x = 0。
+- 不可引用 Course.squares_zero。
+引理名稱請先用 #check 或 hover 確認存在後再使用。
+最後執行 lake env lean Exercises/Squares.lean 並貼出完整輸出。
+```
+
+在 agent 工作時，你的任務是監督：
+
+- 每一輪結束時，它是否依規定列出 diagnostics 原文？
+- 它是否試圖修改陳述，例如把 `List` 改成 `Finset`，或加上 `xs ≠ []` 這類前提？若有，立即拒絕。
+- 它是否引用了 `Course.squares_zero`？若有，拒絕並要求重做。
+- 第 3 輪結束時是否停止？
+
+## 第三步：查核
+
+依 [第 8 章](../../chapters/08-project-audit/) 完成：
+
+1. **原題**：對照上面的數學內容，確認陳述用的是 `List ℝ`、平方是對每個元素、結論是雙向的 `↔`。
+2. **依賴**：暫時在檔案最後加一行 `#print axioms Exercises.squares_zero`，記錄實際輸出後刪除。實數相關的證明通常會依賴 `Classical.choice` 等標準公理，這是正常的；要確認的是沒有 `sorryAx`。
+3. **最終檔案**：在專案根目錄執行 `lake env lean Exercises/Squares.lean`，確認完整輸出中沒有錯誤與 sorry 警告，記下 exit code；陳述與下載時一致。`lake build` 不會檢查練習檔，不能用來驗收。
+4. **數學說明**：用你自己的話，寫出 agent 的證明在數學上做了什麼。如果它用了一條你沒見過的 mathlib 引理，`#check` 它並解釋它說什麼。
+
+## 選做：自己證明命題一
+
+如果你想獨立證明命題一，而不是只閱讀它，請自己新增一個檔案，例如 `Exercises/SquaresNonneg.lean`，以**新的名字**陳述它：
+
+```lean
+import Course.Squares
+
+theorem my_squares_nonneg (xs : List ℝ) : 0 ≤ Course.squareSum xs := by
+  sorry
+```
+
+這一題不可引用 `Course.squares_nonneg`。完成後用 `lake env lean Exercises/SquaresNonneg.lean` 檢查。
+
+## 提示與解答
+
+<details>
+<summary>命題二：基底情況的提示</summary>
+
+空列表時，兩邊分別是「空和等於 0」與「空列表上的全稱敘述」。把 `Course.squareSum` 的定義交給 `simp` 展開即可，例如 `simp [Course.squareSum]`。
+
+</details>
+
+<details>
+<summary>命題二：歸納步驟的提示</summary>
+
+先讓目標中出現 `x ^ 2 + Course.squareSum xs`：可以用 `change`，或用 `have` 寫出這個等式並以 `rfl` 證明，再 `rw`。右邊的「對 `x :: xs` 的每個元素」可以用 `List.forall_mem_cons` 拆成「x 是 0 且對 `xs` 的每個元素」。接著 `constructor` 分兩個方向。
+
+</details>
+
+<details>
+<summary>命題二：「唯若」方向的提示</summary>
+
+手上有 `x ^ 2 + Course.squareSum xs = 0`、`0 ≤ x ^ 2`（`sq_nonneg x`）與 `0 ≤ Course.squareSum xs`（`Course.squares_nonneg xs`）。這是兩個非負量相加為零，`linarith` 可以分別推出 `x ^ 2 = 0` 與 `Course.squareSum xs = 0`。前者用 mathlib 的 `sq_eq_zero_iff` 得到 `x = 0`，後者交給歸納假設。
+
+</details>
+
+<details>
+<summary>命題二：「若」方向的提示</summary>
+
+已知 `x = 0` 且 `xs` 的每個元素為 0。用歸納假設的反方向得到 `Course.squareSum xs = 0`，把兩者代入目標，剩下 `0 ^ 2 + 0 = 0`，交給 `norm_num`。
+
+</details>
+
+<details>
+<summary>選做（命題一）的提示</summary>
+
+對 `xs` 歸納。`cons` 情況中，目標可以改寫成 `0 ≤ x ^ 2 + Course.squareSum xs`，用 `add_nonneg` 結合 `sq_nonneg x` 與歸納假設。
+
+</details>
+
+<details>
+<summary>參考證明（完成後再看）</summary>
+
+課程的參考證明如下。它在「唯若」方向使用 `nlinarith`，與上面提示的路線略有不同。agent 給出的證明可能與參考完全不同；只要通過查核、你能解釋，而且沒有引用這個參考定理，就是可以接受的。
+
+<LeanCode file="Course/Squares.lean" region="squares-zero" />
+
+</details>
+
+## 完成標準
+
+- `Exercises/Squares.lean` 的 `sorry` 已替換，陳述未變，沒有引用 `Course.squares_zero`。
+- 實際執行 `lake env lean Exercises/Squares.lean`，完整輸出沒有錯誤與 sorry 警告，exit code 為 0。
+- 迴圈紀錄完整（每輪 diagnostics 原文），並註明是否在 3 輪內完成。
+- 一份包含原題、依賴、最終檔案、數學說明四部分的查核紀錄，其中依賴與建置欄位是你實際執行得到的輸出。
+- 一段關於空列表與重複值的說明，解釋為什麼這個陳述在這些情況下仍然正確。
+
+完成三次實戰後，可以繼續挑戰進階單元：[實數序列和的極限](../../advanced/01-limits/) 或 [投影矩陣](../../advanced/02-projection/)。

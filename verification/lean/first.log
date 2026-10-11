@@ -1,0 +1,4 @@
+info: downloading https://releases.lean-lang.org/lean4/v4.34.1/lean-4.34.1-linux.tar.zst
+info: installing /home/phonchi/lean/.tools/elan/toolchains/leanprover--lean4---v4.34.1
+Course.first_proof (P : Prop) (h : P) : P
+'Course.first_proof' does not depend on any axioms

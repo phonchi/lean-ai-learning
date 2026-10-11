@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.tools/
+lean-examples/.lake/
+verification/browser/screenshots/
+*.log
+.DS_Store
+
+# 模型對話原文與委派context保持私密；公開repo只保留整理後證據。
+verification/collaboration/
+verification/agents/*/.lake
+verification/agents/*/raw*
+!verification/**/*.log
+verification/browser/v0/

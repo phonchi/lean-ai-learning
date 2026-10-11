@@ -1,0 +1,137 @@
+---
+title: 環境設定
+description: 安裝 VS Code 與 Lean、下載並建置課程專案，以及（選用）在 WSL、macOS 或 Linux 中準備 Claude Code、Codex 與本機 MCP 工具。
+sidebar:
+  order: 1
+---
+
+本頁說明如何準備本課程需要的環境。請依你的作業系統選擇對應的段落，**不要把不同環境的指令混在一起執行**。
+
+整體分成兩部分：
+
+1. **必要**：VS Code、Lean 與課程專案。完成後即可學習 [第 1 章](../../chapters/01-first-proof/) 到 [第 5 章](../../chapters/05-mathlib/)，以及所有手動版本的實戰。
+2. **選用**：Claude Code 或 Codex CLI，以及本機的 `lean-lsp-mcp`。用於 [第 6 章](../../chapters/06-agent-collaboration/) 與 [第 7 章](../../chapters/07-lean-tools/)。沒有帳號也能以手動流程完成所有課程內容。
+
+本課程不需要系統管理員權限安裝系統套件，也不需要任何 API key 或付費服務。
+
+## 第一部分：Lean 與課程專案
+
+### 1. 安裝 VS Code 與 Lean 4 擴充套件
+
+1. 安裝 Visual Studio Code。
+2. 在 VS Code 的擴充套件市集中搜尋並安裝 **Lean 4**（由 leanprover 發布）。
+3. 安裝完成後，擴充套件會提供設定指引，引導你安裝 **elan**。elan 是 Lean 的版本管理工具，安裝在你的使用者目錄下，會依每個專案的 `lean-toolchain` 檔案自動下載正確版本的 Lean。
+
+Lake（Lean 的建置工具）在下載 mathlib 等依賴時會使用 Git。若你的電腦尚未安裝 Git，擴充套件的設定指引也會提示你。
+
+官方安裝說明見 [Lean: Learn](https://lean-lang.org/learn/) 與社群的 [Learning Lean 4](https://leanprover-community.github.io/learn.html) 頁面。
+
+### 2. 下載課程專案
+
+<a href={`${import.meta.env.BASE_URL}downloads/lean-ai-examples.zip`}>下載實作專案</a>，解壓縮到一個路徑中**沒有空白與特殊字元**的位置。
+
+解壓後找到含有 `lean-toolchain` 與 `lakefile.toml` 的那一層目錄，這就是本課程所說的**專案根目錄**。之後所有指令都在這裡執行。
+
+專案中主要的資料夾：
+
+- `Course/`：各章節的參考範例，網站上的程式碼都取自這裡。
+- `Exercises/`：實戰用的練習檔，證明處以 `sorry` 標出待完成位置。
+- `Negative/`：刻意寫錯、**預期無法通過檢查**的範例，用於 [實戰 1](../../labs/01-proof-repair/)，不在正常建置範圍內。
+
+專案鎖定的 Lean 版本寫在 `lean-toolchain` 中，mathlib 版本寫在專案的設定與 `lake-manifest.json` 中（撰寫本教材時對應 mathlib 的 v4.34.1 正式版）。請不要自行升級，否則網站上的說明可能與你看到的不同。
+
+### 3. 取得 mathlib 的預先建置檔並建置
+
+mathlib 很大，從原始碼編譯需要很長時間。社群提供了預先建置好的快取。在 VS Code 中用「檔案 → 開啟資料夾」打開專案根目錄，然後開啟 VS Code 的終端機（它會自動位於專案根目錄），依序執行：
+
+```bash
+lake exe cache get
+```
+
+```bash
+lake build
+```
+
+第一個指令下載 mathlib 的快取檔，第二個指令建置課程的參考範例庫 `Course/`（不包含 `Exercises/` 練習檔，練習檔另以 `lake env lean` 逐檔檢查）。第一次執行時，elan 可能會先下載對應版本的 Lean，請耐心等候。
+
+### 4. 確認安裝成功
+
+1. 在 VS Code 中打開 `Course/First.lean`。這個檔案沒有 import mathlib，通常很快就處理完成，檔案中不應有紅色錯誤。
+2. 把游標放在任何一行證明中，右側應出現 **Lean Infoview** 並顯示 proof state。若沒有出現，在命令面板搜尋「Lean 4: Infoview: Toggle Infoview」。
+3. 再打開一個有 import mathlib 的檔案，例如 `Course/Induction.lean`，確認 mathlib 也能正常載入。這一步第一次可能要等比較久。
+4. 在終端機執行 `lake env lean Exercises/OddSum.lean`。剛下載時它應該只印出 sorry 警告，沒有錯誤；這表示練習檔的檢查方式也能用。
+
+### 依作業系統的注意事項
+
+**Windows（建議以原生 VS Code 學習第 1–5 章）**
+
+- 直接在 Windows 上安裝 VS Code 與 Lean 4 擴充套件即可，依擴充套件的指引完成 elan 安裝。
+- 以上指令在 VS Code 的終端機（PowerShell）中執行。
+- 若之後要使用 Claude Code、Codex 或 MCP，請參考下方「WSL」段落，並在 WSL 中另外準備一份專案；**不要**讓 Windows 與 WSL 的 Lean 共用同一個專案資料夾進行建置。
+
+**macOS 與 Linux**
+
+- 依擴充套件指引安裝 elan 即可。也可以在終端機用 elan 官方安裝指令自行安裝：
+
+```bash
+curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+```
+
+安裝後重新開啟終端機，使 `lake` 指令可用。
+
+**WSL（Windows 上的選用環境，用於 CLI 與 MCP）**
+
+- 在 WSL 的 Linux 終端機中，用上面 macOS 與 Linux 的 elan 安裝指令安裝 elan。
+- 把課程專案解壓到 WSL 自己的檔案系統中（例如家目錄下），而不是 `/mnt/c/...` 這類 Windows 磁碟路徑，建置速度與檔案監看都會比較可靠。
+- 在 WSL 中的專案根目錄重新執行 `lake exe cache get` 與 `lake build`。
+- 若想用 VS Code 編輯 WSL 中的專案，可以從 WSL 終端機在專案根目錄執行 `code .`，VS Code 會以遠端 WSL 模式開啟，並在 WSL 中使用 Lean 擴充套件。
+
+### 常見問題
+
+- **檔案一直顯示處理中**：第一次打開有 import mathlib 的檔案時，需要載入 mathlib，可能需要一些時間。若是一直卡住，確認是否已執行 `lake exe cache get`。
+- **出現大量紅色錯誤，訊息與 import 有關**：通常是開啟了錯誤的資料夾。請確認 VS Code 開啟的是專案根目錄，而不是它的上一層或 `Course/` 子資料夾。
+- **修改了某個被 import 的檔案後，另一個檔案沒有更新**：在命令面板執行「Lean 4: Restart File」。
+- **`lake build` 和練習檔的關係**：`lake build` 只建置課程的參考範例庫 `Course/`，不會檢查 `Exercises/`。要檢查練習檔，請在專案根目錄執行 `lake env lean Exercises/檔名.lean`。剛下載時練習檔會出現 sorry 警告，這是正常的，`sorry` 就是要你完成的地方。
+
+### ZIP 下載者：建立本機比較基準
+
+第 6 章與實戰會用 `git diff` 檢查 agent 改了什麼。ZIP 本身不包含 Git 紀錄；如果這是一份剛解壓、尚未修改的獨立專案，先在專案根目錄執行：
+
+```bash
+git init
+git add Course.lean Course Exercises Negative lakefile.toml lean-toolchain lake-manifest.json
+```
+
+這會把原始課程來源放進 Git 的暫存區，作為本機比較基準，不需要 commit、設定姓名／email 或連接遠端。修改之後、查看 `git diff` 之前，**不要再次執行 `git add`**，否則會把剛才的修改納入基準。
+
+若你本來就在使用 Git，先保留既有修改，沿用自己的版本紀錄，不要重新初始化。也可以另留一份原始下載檔，用 VS Code 的「選取以進行比較」對照修改前後。
+
+## 第二部分（選用）：AI agent 與 MCP
+
+這部分只在 [第 6 章](../../chapters/06-agent-collaboration/) 與 [第 7 章](../../chapters/07-lean-tools/) 需要。Windows 使用者請在 WSL 中進行；macOS 與 Linux 使用者直接在終端機進行。
+
+### Claude Code 或 Codex CLI
+
+依各自官方文件安裝其中一個（或兩者都裝）。登入時**使用你既有的訂閱帳號**：Claude Code 用 Claude 帳號登入，Codex CLI 選擇以 ChatGPT 帳號登入。本課程不需要也不應該設定 API key。若你的終端環境中已設定 `ANTHROPIC_API_KEY` 或 `OPENAI_API_KEY`，工具可能改用 API 計費，請在開始前確認。
+
+### uv（用於執行 lean-lsp-mcp）
+
+課程用 `uvx lean-lsp-mcp==0.31.0` 啟動本機 MCP 伺服器。`uvx` 來自 Python 工具 uv，可以用 uv 官方提供的使用者層級安裝方式安裝，不需要系統管理員權限：
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+安裝後重新開啟終端機。在專案根目錄執行一次 `uvx lean-lsp-mcp==0.31.0`，確認它能啟動（它會等待輸入，按 Ctrl+C 結束即可）。
+
+### 註冊 MCP 伺服器
+
+請依 [第 7 章](../../chapters/07-lean-tools/) 中 Claude Code 或 Codex 的對應段落設定。兩者都要**從專案根目錄**執行設定指令與啟動 agent。
+
+### 沒有 agent 帳號時
+
+第 6、7 章與三次實戰都提供手動流程：自己從 VS Code 的 Infoview 複製 proof state、從問題面板複製 Lean 的錯誤訊息，按照相同的受限迴圈規則進行。學習目標完全相同。
+
+## 下一步
+
+環境準備好之後，從 [第 1 章：第一個 Lean 證明](../../chapters/01-first-proof/) 開始。需要參考資料時，請見 [學習資源](../resources/)。

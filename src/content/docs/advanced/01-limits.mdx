@@ -1,0 +1,148 @@
+---
+title: 進階 1　實數序列和的極限
+description: 從 ε-N 定義出發，證明兩個收斂實數序列之和收斂到極限之和，並認識 mathlib 用 filter 表達極限的方式。
+sidebar:
+  order: 1
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 本單元目標
+
+1. 回顧實數序列極限的 ε-N 定義與「和的極限」的 ε/2 論證。
+2. 看懂 mathlib 中 `Tendsto u atTop (𝓝 a)` 的寫法，並知道它如何轉換回 ε-N 形式。
+3. 比較「直接使用 mathlib 引理」與「從定義出發」兩種證明方式，各自的價值。
+4. 對極限陳述做翻譯查核：索引型別、不等號嚴格與否、量詞順序。
+
+**前置**：[第 3 章](../../chapters/03-logic-and-quantifiers/)（量詞）、[第 5 章](../../chapters/05-mathlib/)（搜尋與 `linarith`）、[第 8 章](../../chapters/08-project-audit/)（查核）。
+
+## 數學回顧
+
+實數序列 (aₙ) 收斂到 A，意思是：
+
+> 對每個 ε > 0，存在 N，使得對所有 n ≥ N，都有 |aₙ − A| 小於 ε。
+
+量詞順序是「∀ ε，∃ N，∀ n」：N 可以依賴 ε，但不能依賴 n。
+
+**定理**：若 aₙ → A 且 bₙ → B，則 aₙ + bₙ → A + B。
+
+**證明**：給定 ε > 0。由 aₙ → A，取 ε/2，存在 N₁ 使得 n ≥ N₁ 時 |aₙ − A| 小於 ε/2。同理存在 N₂ 使得 n ≥ N₂ 時 |bₙ − B| 小於 ε/2。取 N = max(N₁, N₂)。對 n ≥ N，由三角不等式：
+
+|(aₙ + bₙ) − (A + B)| ≤ |aₙ − A| + |bₙ − B|，右邊小於 ε/2 + ε/2 = ε。
+
+證畢。這個證明的關鍵有三：取 ε/2、取 N 為兩者的最大值、三角不等式。
+
+## mathlib 怎麼表達極限
+
+在 mathlib 中，實數序列是一個函數 `a : ℕ → ℝ`。「a 收斂到 A」寫成：
+
+```lean
+Filter.Tendsto a Filter.atTop (nhds A)
+```
+
+開啟對應的命名空間後，通常簡寫成 `Tendsto a atTop (𝓝 A)`。讀法是：「當 n 趨向無窮大時（`atTop`），a n 趨向 A 的鄰域（`𝓝 A`）。」
+
+為什麼不直接用 ε-N？因為 mathlib 用 **filter** 這個抽象概念統一處理各種極限：序列極限、函數在一點的極限、單側極限、無窮遠處的極限……都是同一個 `Tendsto` 的不同 filter。這讓同一條引理（例如「和的極限是極限的和」）能一次涵蓋所有情況。
+
+代價是：初學時這個寫法比較陌生。好消息是，mathlib 提供了把 `Tendsto` 轉換回 ε-N 形式的引理。在度量空間中（`ℝ` 是其中之一），它大致說：
+
+```text
+Tendsto u atTop (𝓝 a) ↔ ∀ ε > 0, ∃ N, ∀ n ≥ N, dist (u n) a < ε
+```
+
+而在 `ℝ` 上，`dist x y` 就是 `|x - y|`。請用 `#check Metric.tendsto_atTop` 查看它在你的 mathlib 版本中的確切形式。
+
+## 參考證明
+
+`limits-add` 區段是課程的參考實作：
+
+<LeanCode file="Course/Limits.lean" region="limits-add" />
+
+閱讀時請先回答：
+
+1. 陳述中的序列型別是什麼？是否為 `ℕ → ℝ`？（參考實作中序列叫 `u`、`v`，極限叫 `a`、`b`，對應上文的 aₙ、bₙ 與 A、B。）
+2. 結論中的極限值是否是 `a + b`，而不是其他東西？結論中的序列 `fun n => u n + v n` 是否就是逐項相加？
+3. 證明是直接引用 mathlib 中「和的極限」的引理，還是從 ε-N 定義出發？
+
+參考證明只有一行 `hu.add hv`，也就是套用 mathlib 的 `Filter.Tendsto.add`。你可能會覺得「什麼都沒學到」。這正是下面練習的用意：自己從定義出發，寫一次 ε/2 論證。練習請寫在自己新增的檔案中（例如 `Exercises/LimitsPractice.lean`，第一行可以照抄參考實作的 import），並用 `lake env lean` 檢查。
+
+## 從定義出發：證明的骨架
+
+用 ε-N 形式時，Lean 中的證明骨架對應到上面的數學證明：
+
+1. 把三個 `Tendsto` 都轉成 ε-N 形式（用 `rw` 或 `Metric.tendsto_atTop` 的 `.mp`、`.mpr`）。
+2. `intro ε hε`：任取 ε > 0。
+3. 對兩個假設分別代入 `ε / 2`，用 `obtain` 取出 N₁ 與 N₂ 及對應的性質。需要先證明 `ε / 2 > 0`，`linarith` 或 `positivity` 可以處理。
+4. `use max N₁ N₂`，接著 `intro n hn`。
+5. 從 `hn : n ≥ max N₁ N₂` 推出 n ≥ N₁ 與 n ≥ N₂（例如把 `le_max_left` 與 `hn` 用 `le_trans` 接起來，或在自然數上直接用 `omega`；引理名稱請以 `#check` 確認）。
+6. 把 `dist` 改寫成絕對值，用三角不等式（mathlib 中有 `abs_add` 一類的引理）與 `linarith` 收尾。
+
+步驟 6 是最需要搜尋的地方。三角不等式在 mathlib 中的名稱在不同版本間有過調整，請用 `exact?` 找，或者讓 `linarith` 搭配你明確提供的不等式。
+
+## 與 AI 協作的建議
+
+這個單元很適合用 [第 7 章](../../chapters/07-lean-tools/) 的受限迴圈，但請注意兩件事：
+
+- 如果你的目標是練習 ε-N 論證，要在 Prompt 中**明確禁止**直接引用「和的極限」的現成引理，否則 agent 很可能一行解決，雖然正確，但不是你要練習的東西。
+- 如果 agent 宣稱某條引理名稱，例如三角不等式的某個版本，請在套用前 `#check`。名稱不存在或假設不符是這類證明中最常見的失敗。
+
+## 查核要點
+
+- **索引型別**：序列是 `ℕ → ℝ`。如果寫成 `ℤ → ℝ`，`atTop` 的意義仍然合理，但已經不是課本上的「序列」。
+- **嚴格不等號**：定義中 ε > 0 是嚴格的，|aₙ − A| 小於 ε 也是嚴格的。把 ε > 0 誤寫成 ε ≥ 0 會讓定義不可滿足（取 ε = 0），把結論寫成 ≤ ε 則恰好等價，但最好與課本一致。
+- **量詞順序**：∃ N 必須在 ∀ n 之前。若寫成 ∀ n ∃ N，條件變得幾乎無意義。
+- **公理**：實分析的證明幾乎一定會出現 `Classical.choice` 等標準公理，這是正常的。
+
+## 練習
+
+### 練習 A1.1　常數倍
+
+證明：若 aₙ → A，則對任意實數 c，c · aₙ → c · A。先寫數學證明，再用 mathlib 找到對應的現成引理。
+
+<details>
+<summary>提示</summary>
+
+數學上，c = 0 時要另外處理，否則取 ε / |c|。在 mathlib 中，`Tendsto` 相關引理常以運算命名，例如 `Tendsto.add`、`Tendsto.mul`；常數乘法的版本可以用 `exact?` 找。
+
+</details>
+
+<details>
+<summary>解答方向</summary>
+
+mathlib 中有 `Filter.Tendsto.const_mul` 一類的引理（請 `#check` 確認參數順序）。若從定義出發，要分 c = 0 與 c ≠ 0 兩種情況，後者取 ε / |c|，並用 |c · x| = |c| · |x|。
+
+</details>
+
+### 練習 A1.2　從定義重證和的極限
+
+不使用 `Tendsto.add` 或任何「和的極限」引理，從 ε-N 定義出發，證明本單元的定理。
+
+<details>
+<summary>提示</summary>
+
+照「從定義出發：證明的骨架」六步走。卡在三角不等式時，先寫出你需要的不等式，例如 `|a n + b n - (A + B)| ≤ |a n - A| + |b n - B|`，用 `have` 單獨證明它，再交給 `linarith`。
+
+</details>
+
+<details>
+<summary>解答方向</summary>
+
+`have` 的那一步可以先把左邊改寫成 `|(a n - A) + (b n - B)|`（用 `ring_nf` 或 `congr 1` 加 `ring`），再套用三角不等式。最後 `linarith` 結合 `|a n - A|` 小於 ε/2、`|b n - B|` 小於 ε/2 與該不等式即可。
+
+</details>
+
+### 練習 A1.3　翻譯查核
+
+有人把「aₙ 收斂到 A」寫成 `∀ ε > 0, ∀ n, ∃ N, n ≥ N → |a n - A| < ε`。這個翻譯有什麼問題？
+
+<details>
+<summary>解答</summary>
+
+量詞順序錯了：∃ N 跑到 ∀ n 之後，N 可以依賴 n。對任意 n，只要取 N 大於 n，條件 `n ≥ N` 就為假，蘊含自動成立。所以這個「定義」對任何序列都成立，毫無內容。
+
+</details>
+
+## 延伸閱讀
+
+- [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 中關於序列與極限的小節，以及「Topology」一章對 filter 的介紹。
+- 另一個進階單元：[投影矩陣](../02-projection/)。

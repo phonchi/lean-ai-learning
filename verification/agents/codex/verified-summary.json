@@ -1,0 +1,48 @@
+{
+  "agent": "codex",
+  "verification_executor": "Codex 主代理使用固定版本Lean執行；Claude候選由Opus CLI產生，該CLI無shell工具。",
+  "checks": [
+    {
+      "file": "ProofRepair.lean",
+      "proof_only_change": true,
+      "no_prohibited_placeholder": true,
+      "no_answer_shortcut": true,
+      "sha256": "ee0f580c473ca22e49498229a8e3c91a34c3dcf47fd1557a8a110d20c0916ac2",
+      "exit_code": 0,
+      "axioms": [],
+      "axioms_within_course_policy": true,
+      "passed": true
+    },
+    {
+      "file": "OddSum.lean",
+      "proof_only_change": true,
+      "no_prohibited_placeholder": true,
+      "no_answer_shortcut": true,
+      "sha256": "7d3f44844e724e6d1dcfdfb649f0fc80ea437a2f9ee8e76675ec0b4591d5d844",
+      "exit_code": 0,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axioms_within_course_policy": true,
+      "passed": true
+    },
+    {
+      "file": "Squares.lean",
+      "proof_only_change": true,
+      "no_prohibited_placeholder": true,
+      "no_answer_shortcut": true,
+      "sha256": "ce2146cf9179c02d1bf0ffbcb9080b55f16bf3f8e20c10bf994855d0e5e5841b",
+      "exit_code": 0,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axioms_within_course_policy": true,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

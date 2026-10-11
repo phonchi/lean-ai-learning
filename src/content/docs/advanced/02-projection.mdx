@@ -1,0 +1,195 @@
+---
+title: 進階 2　投影到直線 x = y 的矩陣
+description: 以 2×2 矩陣 P = ½[[1,1],[1,1]] 為例，證明 P² = P，並刻畫它的像空間就是直線 x = y；練習 mathlib 的矩陣記號與逐項計算。
+sidebar:
+  order: 2
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 本單元目標
+
+1. 從幾何與代數兩方面理解正交投影矩陣 P = ½[[1, 1], [1, 1]]。
+2. 證明 P² = P（冪等），並說明它的幾何意義。
+3. 證明 P 的像空間恰好是直線 x = y，包括兩個方向的包含關係。
+4. 熟悉 mathlib 中 `Matrix (Fin 2) (Fin 2) ℝ` 的寫法、`!![...]` 記號與「逐項比較」的證明策略。
+
+**前置**：[第 3 章](../../chapters/03-logic-and-quantifiers/)（存在量詞與 `use`）、[第 5 章](../../chapters/05-mathlib/)（`simp`、`ring`、`norm_num`）、[第 8 章](../../chapters/08-project-audit/)。
+
+## 數學回顧
+
+### 矩陣與它的作用
+
+令
+
+```text
+P = 1/2 · [ 1  1 ]  =  [ 1/2  1/2 ]
+          [ 1  1 ]     [ 1/2  1/2 ]
+```
+
+對向量 v = (a, b)，
+
+```text
+P v = ( (a + b)/2 , (a + b)/2 )
+```
+
+幾何上，這是把 v 正交投影到直線 x = y 上：直線的方向向量是 u = (1, 1)，投影公式是 (v · u / u · u) u = ((a + b)/2)(1, 1)。
+
+### 冪等：P² = P
+
+逐項計算：P² 的 (1,1) 元素是 1/2 · 1/2 + 1/2 · 1/2 = 1/2，其他三個元素同理，所以 P² = P。
+
+幾何意義：一個已經在直線上的點，再投影一次不會移動。代數上，這是「投影」的定義性質。
+
+### 像空間是直線 x = y
+
+令 L = 所有形如 (t, t) 的向量。要證 P 的像（所有 P v 所成的集合）等於 L，需要兩個方向：
+
+- **像包含於 L**：任取 v = (a, b)，P v 的兩個座標都是 (a + b)/2，所以 P v 在 L 中。
+- **L 包含於像**：任取 (t, t)。我們要找一個 v 使得 P v = (t, t)。取 v = (t, t) 本身即可，因為 P(t, t) = ((t + t)/2, (t + t)/2) = (t, t)。也可以取 v = (2t, 0)。
+
+注意第二個方向是一個**存在**敘述：要交出一個具體的 v。這正是第 3 章 `use` 的用途。
+
+### 補充：核空間
+
+P 的核是所有使 P v = 0 的 v，也就是 a + b = 0，即直線 x = −y，它和 L 正交。這不在參考實作的範圍內，但可以作為練習。
+
+## mathlib 中的矩陣
+
+在 mathlib 中，2×2 實矩陣的型別是 `Matrix (Fin 2) (Fin 2) ℝ`，其中 `Fin 2` 是只含 0 與 1 兩個索引的集合。注意 **Lean 的索引從 0 開始**，數學上的 (1,1) 元素在 Lean 中是 `P 0 0`。
+
+具體矩陣可以用記號寫出：
+
+```lean
+!![1/2, 1/2; 1/2, 1/2]
+```
+
+分號分隔列，逗號分隔同一列中的元素。矩陣乘法就是 `*`，所以 P² = P 寫成 `P * P = P`。矩陣作用在向量上，mathlib 用 `Matrix.mulVec` 表示，向量的型別是 `Fin 2 → ℝ`。
+
+像空間有幾種寫法，例如「所有 `P.mulVec v` 所成的集合」`Set.range P.mulVec`，或把 P 視為線性映射後取它的 range（一個子空間）。不同寫法在 mathlib 中對應不同的型別，這屬於**翻譯選擇**：查核時要確認你選的寫法表達的是「像」這個概念。
+
+## 參考實作
+
+`projection` 區段包含矩陣的定義 `Course.projection` 與三個定理：
+
+<LeanCode file="Course/Projection.lean" region="projection" />
+
+三個定理分別是：
+
+- `projection_idempotent`：`projection * projection = projection`，也就是 P² = P。
+- `projection_coordinates`：對任意向量 v，`P v` 的第 0 個座標等於第 1 個座標，也就是 P v 落在直線 x = y 上。這是「像包含於 L」。
+- `projection_fixed_iff`：`P v = v` 若且唯若 `v 0 = v 1`，也就是 P 恰好固定直線 x = y 上的點。
+
+參考實作**沒有**直接寫出「像空間等於 L」的集合等式，而是用兩個定理合起來表達。請說明為什麼合起來就足夠：`projection_coordinates` 給出「像包含於 L」；而對 L 中的任一點 v，`projection_fixed_iff` 的反方向給出 P v = v，所以 v 是 v 自己的像，這就是「L 包含於像」。把這兩個方向寫成單一的集合等式，是下面的練習 A2.4。
+
+閱讀時也請回答：
+
+1. P 的定義是否與 ½[[1, 1], [1, 1]] 一致？逐一檢查四個元素，並注意第一個元素寫成 `(1/2 : ℝ)` 的型別標註有什麼作用。
+2. 直線 x = y 在陳述中是怎麼表達的？這裡用的是「兩個座標相等」，而不是「存在 t 使得向量等於 (t, t)」。兩種寫法等價，但證明方式不同。
+3. 如果只有 `projection_coordinates`，沒有 `projection_fixed_iff`，那麼它比「像等於直線」弱在哪裡？（提示：零矩陣也滿足它。）
+
+## 證明策略：逐項比較
+
+證明兩個矩陣相等，最可靠的方法是**逐項比較**：
+
+1. 用 `ext i j` 把「矩陣相等」化為「對所有 i、j，第 i 列第 j 行的元素相等」。
+2. 用 `fin_cases i <;> fin_cases j` 把 i、j 拆成 0、1 的四種組合。
+3. 每種組合展開矩陣乘法與 `!![...]` 的元素，再完成數值計算。參考實作用一行 `norm_num [projection, Matrix.mul_apply, Fin.sum_univ_two]` 同時做這兩件事：展開 P 的定義、把矩陣乘法的元素寫成兩項之和，再計算分數。
+
+向量相等同理：`ext i`，再 `fin_cases i`。參考實作處理 `mulVec` 時，展開的是 `Matrix.mulVec`、`dotProduct` 與 `Fin.sum_univ_two`。
+
+這種「拆成有限多個具體情況再計算」的策略，在小矩陣上非常有效；`<;>` 的意思是「把後面的 tactic 套用到前面產生的每一個目標」。如果 `simp` 沒有把矩陣乘法完全展開，用 Infoview 看剩下的目標，常見的情況是需要提示 `simp` 使用矩陣乘法的展開引理，或分數需要 `norm_num` 處理。
+
+## 與 AI 協作的建議
+
+矩陣計算是 agent 很容易「亂試」的領域：`simp` 的各種規則組合、`decide`、`norm_num [Matrix.mul_apply]` 等等。建議在 Prompt 中先提供上面的「逐項比較」骨架，請 agent 只填補每個情況的計算。結束後，一定要逐一檢查四個元素的計算確實對應你紙上的結果，而不只是「通過了」。
+
+另一個要警覺的情況：agent 可能為了讓計算簡單，把 P 改寫成另一個矩陣，例如把 `1/2` 改成 `0.5` 或改用整數矩陣再除以 2。即使數學上等價，**改定義就是改題目**，必須拒絕。
+
+## 查核要點
+
+- **定義**：四個元素都是 1/2，且型別是 `ℝ`。如果誤用 `ℕ` 或 `ℤ`，`1/2` 會被截斷成 `0`，P 會變成零矩陣，而零矩陣同樣滿足 P² = P，證明會通過，但完全不是原題。這是本單元最重要的翻譯陷阱。
+- **索引**：Lean 的 `Fin 2` 從 0 開始。
+- **像空間的雙向性**：確認陳述是集合相等，或者像參考實作一樣，兩個方向都有對應的定理。
+- **直線的描述**：確認描述的是 x = y，而不是 x = −y。
+
+## 練習
+
+### 練習 A2.1　手算與 Lean 對照
+
+在紙上計算 P 作用在 (3, 1) 上的結果。接著在 Lean 中寫一個 `example` 陳述這個計算並證明它。
+
+<details>
+<summary>提示</summary>
+
+紙上結果是 (2, 2)。請自己新增一個檔案（例如 `Exercises/ProjectionPractice.lean`），第一行寫 `import Course.Projection`。向量在 Lean 中可以寫成 `![3, 1]`，陳述為 `Course.projection.mulVec ![3, 1] = ![2, 2]`。證明用 `ext i`、`fin_cases i`，再展開與計算。完成後用 `lake env lean` 檢查這個檔案。
+
+</details>
+
+<details>
+<summary>解答方向</summary>
+
+仿照參考實作 `projection_coordinates` 的寫法，用 `simp [Course.projection, Matrix.mulVec, dotProduct, Fin.sum_univ_two]` 展開，若還剩分數計算就接 `norm_num`。在這個 mathlib 版本中，內積的名稱是根命名空間的 `dotProduct`；不確定時用 `#check` 或 `simp?` 確認。
+
+</details>
+
+### 練習 A2.2　零矩陣陷阱
+
+說明為什麼「把 P 的元素型別寫成 `ℕ`」時，P² = P 仍然能被證明，以及為什麼這個證明毫無意義。
+
+<details>
+<summary>解答</summary>
+
+在 `ℕ` 中 `1 / 2 = 0`，所以 P 是零矩陣，0 · 0 = 0，P² = P 自然成立。但零矩陣的像空間只有零向量，不是直線 x = y。若陳述只有 P² = P（甚至再加上「P v 的兩座標相等」，零矩陣也滿足）而沒有 `projection_fixed_iff` 這類「直線上的點都在像中」的刻畫，這個錯誤完全不會被 Lean 發現。這說明了為什麼查核時要逐一檢查定義，而不是只看定理有沒有通過。
+
+</details>
+
+### 練習 A2.3　核空間
+
+證明：P v = 0 若且唯若 v 的兩個座標和為 0。
+
+<details>
+<summary>提示</summary>
+
+數學上，P v 的兩個座標都是 (a + b)/2，所以 P v = 0 等價於 (a + b)/2 = 0，等價於 a + b = 0。在 Lean 中，兩個方向分開處理；從「向量相等」取出某一個座標的等式，可以把等式兩邊都套用在索引 `0` 上（例如 `congrFun h 0`）。
+
+</details>
+
+<details>
+<summary>解答方向</summary>
+
+「若」方向：`ext i`，`fin_cases i`，展開後用假設 `v 0 + v 1 = 0` 與 `linarith` 完成。「唯若」方向：從 `Course.projection.mulVec v = 0` 取出第 0 個座標，展開後得到 (v 0 + v 1)/2 = 0 一類的等式，再用 `linarith` 得到 v 0 + v 1 = 0。參考實作 `projection_fixed_iff` 的反方向，正是同一種「`ext i`、`fin_cases i`、`simp`、`linarith`」的組合。
+
+</details>
+
+### 練習 A2.4　把像空間寫成集合等式
+
+在你自己的練習檔（`import Course.Projection`）中，陳述並證明：
+
+```lean
+theorem projection_range :
+    Set.range Course.projection.mulVec = {v : Fin 2 → ℝ | v 0 = v 1} := by
+  sorry
+```
+
+這是「P 的像就是直線 x = y」最直接的翻譯。
+
+<details>
+<summary>提示</summary>
+
+用 `ext v` 把集合相等化為「v 在左邊若且唯若 v 在右邊」，再 `constructor` 分兩個方向。左邊的成員資格是一個存在敘述：存在 w 使得 P w = v。
+
+</details>
+
+<details>
+<summary>解答方向</summary>
+
+「像包含於直線」：`rintro ⟨w, rfl⟩` 取出 w，目標變成 P w 的兩個座標相等，正是 `Course.projection_coordinates w`。「直線包含於像」：`intro h` 取得 `v 0 = v 1`，用 `exact ⟨v, (Course.projection_fixed_iff v).mpr h⟩` 交出見證 v 本身。這一步正對應數學上的「取 v = (t, t) 本身即可」。
+
+</details>
+
+## 延伸閱讀
+
+- [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 中關於線性代數與矩陣的章節。
+- 另一個進階單元：[實數序列和的極限](../01-limits/)。
+- 回到 [第 8 章：專題查核](../../chapters/08-project-audit/)，為本單元寫一份查核紀錄。

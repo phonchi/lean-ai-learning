@@ -1,0 +1,14 @@
+ℹ [364/825] Built Course.First (194ms)
+info: Course/First.lean:13:0: Course.first_proof (P : Prop) (h : P) : P
+info: Course/First.lean:14:0: 'Course.first_proof' does not depend on any axioms
+✔ [365/825] Built Course.Logic (196ms)
+✖ [8926/8932] Building Course.Projection (82s)
+trace: .> LEAN_PATH=/home/phonchi/lean/lean-examples/.lake/packages/Cli/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/batteries/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/Qq/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/aesop/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/importGraph/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/plausible/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/packages/mathlib/.lake/build/lib/lean:/home/phonchi/lean/lean-examples/.lake/build/lib/lean /home/phonchi/lean/.tools/elan/toolchains/leanprover--lean4---v4.34.1/bin/lean /home/phonchi/lean/lean-examples/Course/Projection.lean -o /home/phonchi/lean/lean-examples/.lake/build/lib/lean/Course/Projection.olean -i /home/phonchi/lean/lean-examples/.lake/build/lib/lean/Course/Projection.ilean -c /home/phonchi/lean/lean-examples/.lake/build/ir/Course/Projection.c --setup /home/phonchi/lean/lean-examples/.lake/build/ir/Course/Projection.setup.json --json
+error: Course/Projection.lean:5:4: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Real.instDivInvMonoid', which is 'noncomputable'
+✔ [8927/8932] Built Course.Induction (83s)
+✔ [8928/8932] Built Course.Mathlib (83s)
+✔ [8929/8932] Built Course.Limits (83s)
+✔ [8930/8932] Built Course.Squares (83s)
+Some required targets logged failures:
+- Course.Projection
+error: build failed

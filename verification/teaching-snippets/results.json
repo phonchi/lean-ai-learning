@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "tactic-capabilities",
+      "expected_success": true,
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "matrix-names",
+      "expected_success": true,
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "odd-sum-variants",
+      "expected_success": true,
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "invalid-matrix-name",
+      "expected_success": false,
+      "exit_code": 1,
+      "passed": true
+    }
+  ]
+}

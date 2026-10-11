@@ -1,0 +1,159 @@
+---
+title: 實戰 1　命題邏輯證明修復
+description: 修復命題邏輯練習中的 sorry 與錯誤證明；AI 只負責解釋錯誤訊息，修改由你完成。並面對一個缺少前提的錯誤命題，學會用反例而非改題來回應。
+sidebar:
+  order: 1
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 這次實戰的定位
+
+三次實戰會逐步提高 AI 的自主程度：
+
+| 實戰 | AI 的角色 | 誰動手改檔案 |
+| --- | --- | --- |
+| 實戰 1（本頁） | 解釋錯誤訊息與 proof state | 你 |
+| [實戰 2](../02-odd-sum/) | 提出修改建議，你逐一審核 | 你審核後套用 |
+| [實戰 3](../03-sum-of-squares/) | 在受限迴圈中自行修改 | agent，你負責查核 |
+
+不論哪一次，以下規則都不變：
+
+- 不可修改 theorem statement（包括名稱、參數、假設、結論）。
+- 不可新增前提、修改 `def`、宣告 `axiom`，也不可留下 `sorry` 或 `admit`。
+- 每個 `sorry` 最多 3 輪「修改 → 讀錯誤」。3 輪後仍失敗，停下來回到數學，並記錄。
+
+**前置**：[第 1 章](../../chapters/01-first-proof/) 至 [第 3 章](../../chapters/03-logic-and-quantifiers/)。若要使用 agent，請先讀 [第 6 章](../../chapters/06-agent-collaboration/)。
+
+## 任務 A：修復練習檔
+
+打開 `Exercises/ProofRepair.lean`：
+
+<LeanCode file="Exercises/ProofRepair.lean" />
+
+這個檔案只有一個定理 `imp_trans`，它的陳述是正確且可證的；待完成的位置以 `sorry` 標出。請依下列步驟進行。課程範例中有一個同名的參考答案，但這次請不要直接引用它，也先不要去看它。
+
+### 步驟 1：先用中文讀陳述
+
+在動手前，寫下這一題在說什麼，並判斷它在紙上為何成立。這一題說的是：「已知 P 推出 Q，且 Q 推出 R，則 P 推出 R」。紙上的理由是「把兩個推論接起來」。請注意，`hPQ` 與 `hQR` 寫在冒號**左邊**，它們是已經給你的假設；冒號右邊只剩 `P → R` 要證。如果你寫不出紙上的理由，先不要碰 Lean，回去重讀第 3 章的引入／消去表。
+
+### 步驟 2：讀 proof state，決定第一步
+
+把游標放在 `sorry` 前，看 Infoview。問自己：**目標的最外層符號是什麼？** 是 `→` 就 `intro`，是 `∧` 就 `constructor`，是 `∨` 就要決定 `left` 或 `right`。再問：**假設中有什麼可以拆？**
+
+### 步驟 3：遇到錯誤時，請 AI 解釋，而不是請 AI 修
+
+本次實戰中，AI 只能當解釋者。把錯誤訊息與 proof state 一起貼給它：
+
+```text
+以下是 Lean 4 的錯誤訊息與當時的 proof state。
+請用中文解釋這個錯誤的意思、是哪個型別對不上，
+但不要給我修改後的程式碼。
+
+錯誤訊息：（貼上）
+proof state：（貼上）
+```
+
+你最常遇到的幾種錯誤：
+
+- **type mismatch**：你交出的證據型別和目標不同。例如目標是 `q ∧ p`，你交出了 `⟨hp, hq⟩`，順序反了。
+- **unsolved goals**：證明結束時還有目標沒處理，常見於 `constructor` 或 `rcases` 之後只處理了一個分支。
+- **unknown identifier**：用了一個不存在的名字，常見於假設名打錯，或 `intro` 時取了別的名字。
+
+### 步驟 4：記錄
+
+記下：使用了幾輪、每輪的錯誤訊息（原文）、你最後的理解。不要事後重新整理成「一次就成功」的樣子；真實的錯誤紀錄才有學習價值。
+
+### 步驟 5：在終端機驗收
+
+在專案根目錄執行：
+
+```bash
+lake env lean Exercises/ProofRepair.lean
+```
+
+記下完整輸出與 exit code。輸出中不應有錯誤，也不應有 sorry 警告。不要用 `lake build` 驗收：它只建置 `Course/`，不會檢查練習檔。
+
+### 選做：換一種寫法
+
+完成後，試著用另一種風格再寫一次：如果你用了 `apply` 倒推，就改用一行 `exact` 交出整個 proof term；反之亦然。兩種寫法都完成後，再對照 `Course/Logic.lean` 的 `imp-trans` 與 `imp-trans-steps` 區段。
+
+## 任務 B：缺少前提的錯誤命題
+
+課程專案的 `Negative/FalseStatement.lean` 中，刻意放了一個**前提不足**的命題：只知道 P 推出 Q，卻想推出 Q 推出 P，也就是把蘊含的方向倒過來。這個檔案**預期無法編譯成功**（`exact h` 會出現型別不符的錯誤），因此不在正常的建置範圍內；請在 VS Code 中單獨打開它閱讀：
+
+<LeanCode file="Negative/FalseStatement.lean" />
+
+### 為什麼不能「修」它
+
+當你（或 agent）試了很多方法都證不出來時，有兩種可能：你還沒找到證明，或者**陳述本身是假的**。對後者，正確的回應是找出反例，而不是：
+
+- 加上一個前提讓它變得可證（這是改題）；
+- 改成另一個相似但成立的陳述，然後宣稱完成（這也是改題）；
+- 用 `sorry` 或 `axiom` 蓋過去。
+
+### 如何找反例：真值表
+
+命題邏輯的陳述只涉及 `True` 與 `False` 兩種取值，所以可以窮舉。以一個不同於練習檔的例子說明：有人宣稱「若 p 推出 q，則 q 成立」，也就是 `(p → q) → q`。
+
+列出 p、q 的四種取值，檢查是否每一種都使整個式子為真。取 p 為假、q 為假：`p → q` 為真（前提假時蘊含為真），但 q 為假，所以整個式子為假。這就是反例。缺少的前提是「p 成立」；加上它就變成正確的推論規則（modus ponens），但那已經是**另一個定理**。
+
+### 在 Lean 中證明「它是假的」
+
+反例本身也可以形式化。上面的例子中，「不是對所有 p、q 都成立」寫成：
+
+```lean
+example : ¬ ∀ p q : Prop, (p → q) → q := by
+  intro h
+  exact h False False (fun hf => hf)
+```
+
+把 p、q 都取為 `False` 代入 `h`，就得到 `False` 的證明。這是一個**否定命題的正確證明**，和原本的錯誤陳述是兩回事。
+
+### 你的任務
+
+1. 用中文寫出 `Negative/FalseStatement.lean` 中陳述的意思，並讀懂 Lean 對 `exact h` 回報的錯誤：`h` 的型別和目標的型別差在哪裡？
+2. 用真值表找出一組反例取值，寫在筆記中。
+3. 說明要讓結論成立，還缺什麼前提，以及為什麼加上前提之後就是**不同的定理**。
+4. （選做）在你自己的筆記檔中，仿照上面的例子寫出「原陳述的否定」並證明它。不要修改 `Negative/FalseStatement.lean` 本身。
+
+## 提示與解答
+
+<details>
+<summary>任務 A 的一般提示</summary>
+
+目標 `P → R` 的最外層是 `→`，所以第一步是 `intro`。之後目標變成 `R`，而手上有 `hQR : Q → R`：要證 R，只需證 Q。這正是 `apply` 的用途。
+
+</details>
+
+<details>
+<summary>任務 A 的解答方向</summary>
+
+`intro hP` 之後，連續兩次 `apply`（先用 `hQR`、再用 `hPQ`）把目標退回到 `P`，最後 `exact hP`；或者在 `intro hP` 之後直接 `exact hQR (hPQ hP)`。完成後再對照 `Course/Logic.lean` 的 `imp-trans` 與 `imp-trans-steps` 區段。若你的證明和參考不同，只要能通過檢查、而且你能解釋每一步，就是好的證明。
+
+</details>
+
+<details>
+<summary>任務 B 的提示</summary>
+
+先把陳述中所有的命題變數列出來，各取 `True` 或 `False`，一共只有少數幾種組合。找出「前提全部為真、結論為假」的那一組。
+
+</details>
+
+<details>
+<summary>任務 B 的解答方向</summary>
+
+取 P 為假、Q 為真：`P → Q` 為真（前提假時蘊含為真），但 `Q → P` 是「真推出假」，為假。所以「對所有 P、Q，由 P → Q 推出 Q → P」不成立。形式化時可以寫 `¬ ∀ P Q : Prop, (P → Q) → (Q → P)`，用 `intro h`，把 `False` 與 `True` 代入 `h`，再交出 `P → Q` 的證明（`fun hf => hf.elim`）與 `Q` 的證明（`trivial`），就得到 `False`。
+
+要推出 `Q → P`，必須額外知道 `Q → P` 本身，或「P 成立」之類的條件。加上這些條件後得到的是另一個（而且相當無趣的）定理，和原陳述的意思不同。這正是「不能為了通過而加前提」的原因。
+
+</details>
+
+## 完成標準
+
+- `Exercises/ProofRepair.lean` 中的 `sorry` 已替換，陳述與原始下載的版本一致。
+- 實際執行 `lake env lean Exercises/ProofRepair.lean`，完整輸出沒有錯誤與 sorry 警告，exit code 為 0，並把輸出記在筆記中。
+- 暫時在檔案最後（`end Exercises` 之後）加一行 `#print axioms Exercises.imp_trans`，把實際輸出記在筆記中，然後刪掉這一行。練習檔不屬於可被 import 的程式庫，所以要在同一個檔案裡查。
+- 有一份真實的錯誤紀錄，以及任務 B 的反例與說明。
+
+下一步：[實戰 2：前 n 個奇數和](../02-odd-sum/)。

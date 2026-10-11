@@ -1,0 +1,16 @@
+'Course.first_proof' does not depend on any axioms
+'Course.first_term' does not depend on any axioms
+'Course.odd_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.limits_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.imp_trans' does not depend on any axioms
+'Course.imp_trans_steps' does not depend on any axioms
+'Course.and_swap' does not depend on any axioms
+'Course.quantifiers' does not depend on any axioms
+'Course.automation_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.automation_ring' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.automation_linarith' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.projection_idempotent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.projection_coordinates' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.projection_fixed_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.squares_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Course.squares_zero' depends on axioms: [propext, Classical.choice, Quot.sound]

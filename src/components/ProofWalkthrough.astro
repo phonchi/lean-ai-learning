@@ -1,0 +1,42 @@
+---
+const states = [
+  { line: 'intro hp', goal: 'P Q R : Prop\nhpq : P → Q\nhqr : Q → R\n⊢ P → R', note: '目標是 P → R。先假設 P 成立，再想辦法得到 R。', active: 0 },
+  { line: 'apply hqr', goal: 'P Q R : Prop\nhpq : P → Q\nhqr : Q → R\nhp : P\n⊢ R', note: 'intro hp 把 P 加入假設。hqr 告訴我們：只要證出 Q，就能得到 R。', active: 1 },
+  { line: 'apply hpq', goal: 'P Q R : Prop\nhpq : P → Q\nhqr : Q → R\nhp : P\n⊢ Q', note: 'apply hqr 把目標換成 Q。接著使用 hpq，把問題再往前推一步。', active: 2 },
+  { line: 'exact hp', goal: 'P Q R : Prop\nhpq : P → Q\nhqr : Q → R\nhp : P\n⊢ P', note: '手上已經有 hp : P，用 exact hp 完成這個目標。', active: 3 },
+  { line: '證明完成', goal: '沒有剩餘目標', note: '每一步都有理由。AI 可以提出這些步驟，你仍然能解釋它為什麼成立。', active: 4 },
+];
+---
+<section class="proof-walk" aria-label="逐步讀懂一個證明" data-proof-walk data-states={JSON.stringify(states)}>
+  <div class="proof-heading"><span>先讀懂一個證明</span><span class="proof-kicker">P → R</span></div>
+  <p class="proof-statement">已知 P 推出 Q，Q 推出 R。如何證明 P 推出 R？</p>
+  <div class="proof-columns">
+    <div class="proof-script" aria-label="Lean 證明步驟"><span class="proof-by">by</span>
+      <div data-proof-line class="current">  intro hp</div><div data-proof-line>  apply hqr</div><div data-proof-line>  apply hpq</div><div data-proof-line>  exact hp</div>
+    </div>
+    <div class="proof-goal"><span class="pane-caption">目前的假設與目標</span><pre data-proof-goal>{states[0].goal}</pre></div>
+  </div>
+  <p class="proof-note" data-proof-note aria-live="polite">{states[0].note}</p>
+  <div class="proof-controls"><button type="button" data-proof-prev disabled aria-label="回到上一步">← 上一步</button><span data-proof-count>第 1 / 5 步</span><button type="button" data-proof-next>下一步 →</button></div>
+  <p class="proof-footnote">逐步推演示意。親手執行，從第一章開始。</p>
+</section>
+<script>
+  for (const panel of document.querySelectorAll<HTMLElement>('[data-proof-walk]')) {
+    const states = JSON.parse(panel.dataset.states || '[]');
+    let step = 0;
+    const prev = panel.querySelector<HTMLButtonElement>('[data-proof-prev]')!;
+    const next = panel.querySelector<HTMLButtonElement>('[data-proof-next]')!;
+    function render() {
+      const state = states[step];
+      panel.querySelector('[data-proof-goal]')!.textContent = state.goal;
+      panel.querySelector('[data-proof-note]')!.textContent = state.note;
+      panel.querySelector('[data-proof-count]')!.textContent = `第 ${step + 1} / ${states.length} 步`;
+      panel.querySelectorAll('[data-proof-line]').forEach((line, i) => { line.classList.toggle('current', i === state.active); line.classList.toggle('completed', i < state.active); });
+      prev.disabled = step === 0;
+      next.disabled = step === states.length - 1;
+      next.textContent = step === states.length - 1 ? '已完成' : '下一步 →';
+    }
+    prev.addEventListener('click', () => { step = Math.max(0, step - 1); render(); });
+    next.addEventListener('click', () => { step = Math.min(states.length - 1, step + 1); render(); });
+  }
+</script>

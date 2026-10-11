@@ -1,0 +1,33 @@
+{
+  "source": "https://www.youtube.com/playlist?list=PLCKW73PRfmKo",
+  "http_status": 200,
+  "checked_at": "2026-10-11T02:16:00.268010+00:00",
+  "title": "How Lean Works｜電腦如何檢查數學證明",
+  "videos": [
+    {
+      "id": "STMP2kFx3fw",
+      "title": "電腦憑什麼說一個數學證明是對的？｜How Lean Works 第 1 集"
+    },
+    {
+      "id": "N7SYYyZO2DU",
+      "title": "型別檢查到底在檢查什麼？｜How Lean Works 第 2 集"
+    },
+    {
+      "id": "aQP13mmH2mk",
+      "title": "你早就在用的推論規則｜How Lean Works 第 3 集"
+    },
+    {
+      "id": "7k3qG68PdYQ",
+      "title": "「推出」就是函數｜How Lean Works 第 4 集"
+    },
+    {
+      "id": "H7KaiMwzyJQ",
+      "title": "且、或、非，都是型別｜How Lean Works 第 5 集"
+    },
+    {
+      "id": "Dqqh1G-CnL8",
+      "title": "為什麼「P 或非 P」造不出來？｜How Lean Works 第 6 集"
+    }
+  ],
+  "scope": "清單HTML中繼資料；未觀看影片，未取得字幕。"
+}

@@ -1,0 +1,161 @@
+---
+title: 實戰 2　前 n 個奇數和與索引變體
+description: 用歸納法完成前 n 個奇數和的證明，並處理不同索引寫法的變體；AI 提出建議，你逐一審核後才套用。
+sidebar:
+  order: 2
+---
+
+import LeanCode from '../../../components/LeanCode.astro';
+
+## 這次實戰的定位
+
+本次 AI 的自主程度提高一級：**AI 可以提出具體的修改建議，但每一個建議都由你審核、理解之後才套用到檔案中**。你可以使用 Claude Code 或 Codex，明確要求「只提出一個建議步驟，不要修改檔案，等我回報 Lean 訊息再繼續」，再由自己貼入工作副本；也可以把 proof state 貼到聊天型 AI，或完全手動進行。
+
+規則不變：不改陳述、不加前提、不改定義、不用 `axiom`、`sorry`、`admit`；每個 `sorry` 最多 3 輪。
+
+**前置**：[第 4 章](../../chapters/04-induction-and-sums/)、[第 5 章](../../chapters/05-mathlib/)、[第 6 章](../../chapters/06-agent-collaboration/)；若使用 MCP，另需 [第 7 章](../../chapters/07-lean-tools/)。
+
+## 數學回顧
+
+前 n 個奇數 1, 3, 5, ..., 2n − 1 的和是 n²。幾何上，可以把 n² 個點排成正方形：從 (n − 1) × (n − 1) 的正方形擴大到 n × n，需要在右邊與上方各補一排，再加上角落一點，共 2(n − 1) + 1 = 2n − 1 個點，恰好是第 n 個奇數。代數上，這就是歸納步驟中的 n² + (2n + 1) = (n + 1)²。
+
+這個看似簡單的結果，在形式化時的主要難點不在數學，而在**索引**：從 0 還是從 1 開始、上界包不包含、第 i 項寫成 2i + 1 還是 2i − 1。這次實戰就是要練習處理這些差異。
+
+## 練習檔
+
+<LeanCode file="Exercises/OddSum.lean" />
+
+檔案中只有一個定理 `odd_sum`：以 `Finset.range n` 為索引範圍、第 k 項為 `2 * k + 1` 的主陳述。這是本次實戰必做的部分。頁面後段另外列出兩個**選做**的索引變體，它們不在下載的檔案中，要由你自己另開新檔。動手之前，請先完成下面的「翻譯檢查」。
+
+## 第一步：翻譯檢查（你自己做）
+
+對主陳述（以及你打算做的選做變體），填寫：
+
+1. 求和的索引範圍：用 `Finset.range` 還是 `Finset.Icc`？包含哪些 k？
+2. 第 k 項是什麼？在 `ℕ` 中是否涉及減法？
+3. n = 0、1、3 時，左右兩邊各是多少？
+
+你可以用 `#eval` 協助計算具體值，例如在檔案末尾暫時加上一行 `#eval ∑ k ∈ Finset.range 3, (2 * k + 1)`。算完記得刪除。
+
+這一步請不要交給 AI。原因不是 AI 算不對，而是**判斷陳述是否忠實於「前 n 個奇數和為 n²」這件事，本來就是你的責任**。做完之後，可以請 AI 也做一次，比對兩邊的結果。
+
+## 第二步：主定理
+
+先處理檔案中的主陳述。這一題和 [第 4 章](../../chapters/04-induction-and-sums/) 的例題同型。課程範例中有同名的參考證明，但這次請不要直接引用它。建議你先自己寫出骨架：
+
+```lean
+induction n with
+| zero => ...
+| succ n ih => ...
+```
+
+如果卡住，可以請 AI 提出建議。使用下面的 Prompt：
+
+```text
+這是 Lean 4 + mathlib 的證明。目前的 proof state 如下。
+請只建議「下一步」的一個 tactic，並說明：
+(1) 它對應的數學步驟；
+(2) 執行後 proof state 預期會變成什麼。
+不要修改定理陳述，不要使用 sorry、admit 或 axiom。
+
+proof state：（貼上）
+```
+
+**審核每一個建議**：在套用前，先預測它會讓目標變成什麼；套用後，比對 Infoview 是否與 AI 的預測一致。不一致時，以 Lean 為準，並把差異記下來。
+
+完成後，在專案根目錄執行：
+
+```bash
+lake env lean Exercises/OddSum.lean
+```
+
+記下完整輸出與 exit code。輸出中不應有錯誤，也不應有 sorry 警告。`lake build` 不會檢查練習檔，不能拿來驗收。
+
+## 第三步（選做）：索引變體
+
+下面兩個陳述是同一個數學事實的不同寫法。它們**不在**下載的練習檔中。若要實際在 Lean 中做，請在專案根目錄自己新增一個檔案，例如 `Exercises/OddSumVariants.lean`，寫入：
+
+```lean
+import Course.Induction
+import Mathlib.Algebra.BigOperators.Intervals
+
+theorem odd_sum_succ (n : ℕ) :
+    ∑ k ∈ Finset.range (n + 1), (2 * k + 1) = (n + 1) ^ 2 := by
+  sorry
+
+theorem odd_sum_Icc (n : ℕ) :
+    ∑ k ∈ Finset.Icc 1 n, (2 * k - 1) = n ^ 2 := by
+  sorry
+```
+
+主定理你已經在第二步親手證明過了，所以在這個新檔中可以引用課程的參考版本 `Course.odd_sum`（因此第一行 import 了 `Course.Induction`）。完成後用 `lake env lean Exercises/OddSumVariants.lean` 檢查。動手前，也請對這兩個陳述做第一步的翻譯檢查。
+
+處理變體有兩種策略：
+
+**策略一：直接再做一次歸納。** 適合結構與主定理相似、但項的寫法不同的情況，例如 `odd_sum_Icc`。
+
+**策略二：化歸到主定理。** 先證明變體的左邊等於主定理的左邊（或某個已知量），再引用主定理。例如 `odd_sum_succ` 中 `Finset.range (n + 1)` 上的和，可以直接把主定理套用在 n + 1 上，得到 (n + 1)²，不需要重新歸納。
+
+對於用 `Finset.Icc 1 n` 與 `2 * k - 1` 寫成的版本，要特別小心 `ℕ` 的截斷減法。幾個有用的工具：
+
+- mathlib 中有把 `Icc` 上的和拆出最後一項的引理 `Finset.sum_Icc_succ_top`，它需要一個「下界不超過上界加一」的條件。請用 `#check Finset.sum_Icc_succ_top` 確認它的確切形式。
+- `omega` 能處理自然數上的線性算術，包括截斷減法，例如證明 `2 * (n + 1) - 1 = 2 * n + 1`。
+- 如果減法讓 `ring` 失敗，先用 `omega` 或改寫把減法消掉，再交給 `ring`。注意 `omega` 不處理 `n ^ 2` 這類非線性項，所以要先用 `omega` 單獨證明關於減法的小等式，再改寫進目標。
+
+## 一個常見的 AI 回應
+
+AI 有時會這樣回答：「我用 `#eval` 驗證了 n 從 0 到 50 都成立，所以這個陳述是對的。」請記住 [第 4 章](../../chapters/04-induction-and-sums/) 的結論：這是**翻譯檢查**，不是證明。它告訴你陳述很可能沒寫錯，但完成的標準只有一個：檔案中的證明通過 Lean 檢查、沒有 `sorry`。
+
+另一種需要警覺的回應是：「`2 * i - 1` 在 `ℕ` 中處理起來很麻煩，我把它改成 `2 * i + 1` 並調整範圍。」這是在改陳述。即使改後的陳述在數學上等價，這次實戰的規則也不允許；你應該在筆記中記下這個建議，並要求 AI 在不改陳述的前提下繼續，或自己處理。
+
+## 提示與解答
+
+<details>
+<summary>主定理的提示</summary>
+
+`succ` 情況的節奏是第 4 章的「拆、代、整理」：`Finset.sum_range_succ`、`ih`、`ring`。如果 `zero` 情況的 `simp` 留下奇怪的目標，看看 Infoview 中剩下什麼。
+
+</details>
+
+<details>
+<summary>主定理的解答</summary>
+
+請在自己完成之後再展開比對。參考證明在 `Course/Induction.lean` 的 `odd-sum` 區段：
+
+<LeanCode file="Course/Induction.lean" region="odd-sum" />
+
+你的證明不必和它一模一樣，但每一步都應該能用一句中文解釋。
+
+</details>
+
+<details>
+<summary>range (n + 1) 變體的提示</summary>
+
+不需要重新歸納。主定理是「對所有 n」的陳述，可以把它套用在 `n + 1` 上。`Course.odd_sum (n + 1)` 的型別是什麼？和 `odd_sum_succ` 的目標一模一樣嗎？
+
+</details>
+
+<details>
+<summary>Icc 與減法變體的提示</summary>
+
+兩種路線：(1) 直接對 n 歸納，用 `Icc` 版本的「拆出最後一項」引理，再用 `omega` 處理 `2 * (n + 1) - 1`；(2) 先證明 `Icc 1 n` 上的 `2 * i - 1` 之和，等於 `range n` 上的 `2 * i + 1` 之和（索引平移 i 對應 i + 1），再引用主定理。路線 (1) 通常比較直接。
+
+</details>
+
+<details>
+<summary>Icc 與減法變體的解答方向</summary>
+
+走路線 (1) 時，`succ` 情況用 `Finset.sum_Icc_succ_top` 拆出最後一項後，目標大致是「舊的和 + (2 * (n + 1) - 1) = (n + 1) ^ 2」。先用 `ih` 換掉舊的和，再用 `have h : 2 * (n + 1) - 1 = 2 * n + 1 := by omega` 把減法單獨處理掉，`rw [h]` 之後交給 `ring`。拆項引理的前提「1 ≤ n + 1」也可以用 `omega` 證明。
+
+</details>
+
+## 完成標準
+
+- `Exercises/OddSum.lean` 的 `sorry` 已替換，陳述與下載時一致。
+- 實際執行 `lake env lean Exercises/OddSum.lean`，完整輸出沒有錯誤與 sorry 警告，exit code 為 0，輸出已記錄。
+- 暫時在檔案最後加一行 `#print axioms Exercises.odd_sum`，記錄實際輸出後刪除。
+- （選做）若做了變體，`Exercises/OddSumVariants.lean` 也以 `lake env lean` 檢查並記錄輸出。
+- 每一個你採納的 AI 建議都附有：建議內容、你的預測、實際結果。被你拒絕的建議也記錄理由。
+- 每個 `sorry` 的嘗試輪數不超過 3；若有達上限的情況，紀錄中寫明你如何重新理解問題。
+
+下一步：[實戰 3：實數列表的平方和](../03-sum-of-squares/)。

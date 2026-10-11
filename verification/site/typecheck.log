@@ -1,0 +1,15 @@
+
+> lean-ai-learning@1.0.0 check
+> astro check
+
+10:26:15 [content] Syncing content
+10:26:15 [content] Content config changed
+10:26:15 [content] Clearing content store
+10:26:15 [content] Synced content
+10:26:15 [types] Generated 478ms
+10:26:15 [check] Getting diagnostics for Astro files in /home/phonchi/lean...
+Result (9 files): 
+- 0 errors
+- 0 warnings
+- 0 hints
+

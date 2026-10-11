@@ -1,0 +1,16 @@
+lean-version 通過
+lake-version 通過
+build 通過
+file-First 通過
+file-Induction 通過
+file-Limits 通過
+file-Logic 通過
+file-Mathlib 通過
+file-Projection 通過
+file-Squares 通過
+axioms 通過
+negative-FalseStatement 通過
+negative-TypeMismatch 通過
+exercise-OddSum 通過
+exercise-ProofRepair 通過
+exercise-Squares 通過

@@ -1,0 +1,6 @@
+Negative/FalseStatement.lean:3:2: error: Type mismatch
+  h
+has type
+  P → Q
+but is expected to have type
+  Q → P

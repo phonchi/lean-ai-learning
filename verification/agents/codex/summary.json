@@ -1,0 +1,28 @@
+{
+  "agent": "Codex 主代理（本次工作階段）",
+  "method": "由主代理填入proof body，再用本機Lean實際編譯；不是獨立CLI對話。",
+  "checks": [
+    {
+      "file": "ProofRepair.lean",
+      "exit_code": 0,
+      "proof_only_change": true,
+      "no_sorry": true,
+      "passed": true
+    },
+    {
+      "file": "OddSum.lean",
+      "exit_code": 0,
+      "proof_only_change": true,
+      "no_sorry": true,
+      "passed": true
+    },
+    {
+      "file": "Squares.lean",
+      "exit_code": 0,
+      "proof_only_change": true,
+      "no_sorry": true,
+      "passed": true
+    }
+  ],
+  "passed": true
+}
