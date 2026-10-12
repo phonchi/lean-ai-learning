@@ -1,0 +1,8 @@
+{
+  "sha256_match": true,
+  "file_count": 24,
+  "manifest_count": 24,
+  "new_files_present": true,
+  "content_mismatches": [],
+  "passed": true
+}
