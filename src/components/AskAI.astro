@@ -1,0 +1,18 @@
+---
+// 「和 AI 一起學」：可複製的 prompt、判斷 AI 的檢查點。檢查點放 default slot。
+interface Props { task: string; prompt: string; }
+const { task, prompt } = Astro.props;
+---
+<aside class="ask-ai" aria-label="和 AI 一起學">
+  <p class="ask-ai-label">和 AI 一起學</p>
+  <p class="ask-ai-task">{task}</p>
+  <details class="ask-ai-prompt">
+    <summary>可直接複製的 prompt</summary>
+    <pre>{prompt}</pre>
+    <button type="button" data-lean-copy data-code={prompt}>複製 prompt</button><span class="copy-feedback" aria-live="polite"></span>
+  </details>
+  <div class="ask-ai-check"><p class="ask-ai-sub">拿到回答後，你要親自確認</p><slot /></div>
+</aside>
+<script>
+  import '../scripts/copy';
+</script>

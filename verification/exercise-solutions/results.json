@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "file": "advanced-01.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "advanced-02.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-01.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-02.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-03.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-04.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-05.lean",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "file": "chapters-08.lean",
+      "exit_code": 0,
+      "passed": true
+    }
+  ]
+}

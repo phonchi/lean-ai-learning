@@ -1,0 +1,9 @@
+---
+// 術語小卡：摘要一句白話，展開看完整解釋。
+interface Props { term: string; short: string; }
+const { term, short } = Astro.props;
+---
+<details class="term-card">
+  <summary><span class="term-name">{term}</span><span class="term-short">{short}</span></summary>
+  <div class="term-body"><slot /></div>
+</details>

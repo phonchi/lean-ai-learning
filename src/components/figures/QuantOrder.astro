@@ -1,0 +1,47 @@
+---
+// 第 3 章：量詞順序。左：每個 n 各自找 m（真）；右：單一 m 要大過所有 n（假）。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 316" role="img" aria-labelledby="qo-title qo-desc" style="min-width:600px">
+    <title id="qo-title">量詞順序：∀∃ 與 ∃∀</title>
+    <desc id="qo-desc">左邊說明每個自然數 n 都可以各自選 m 等於 n 加 1，所以為真；右邊說明不存在一個 m 比所有自然數都大，因為取 n 等於 m 就失敗。</desc>
+    <defs>
+      <marker id="qo-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+      <marker id="qo-arrow-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk-accent" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <!-- 左：∀ n, ∃ m -->
+    <text class="t-m" x="40" y="36">∀ n : ℕ, ∃ m : ℕ, n &lt; m</text>
+    <text class="t-a" x="40" y="60">真：m 可以跟著 n 改變</text>
+    {[0,1,2,3].map((n, i) => (
+      <g>
+        <line class="line-accent" x1="124" y1={104 + i*48} x2="228" y2={104 + i*48} marker-end="url(#qo-arrow-a)"/>
+        <rect class="box" x="40" y={88 + i*48} width="84" height="32" rx="4"/>
+        <text class="t-m" x="82" y={109 + i*48} text-anchor="middle">n = {n}</text>
+        <rect class="box-focal" x="236" y={88 + i*48} width="84" height="32" rx="4"/>
+        <text class="t-m" x="278" y={109 + i*48} text-anchor="middle">m = {n+1}</text>
+      </g>
+    ))}
+    <text class="t-s" x="40" y="296">每個 n 各配一個 m＝n＋1</text>
+    <line class="rule" x1="372" y1="24" x2="372" y2="296"/>
+    <!-- 右：∃ m, ∀ n -->
+    <text class="t-m" x="404" y="36">∃ m : ℕ, ∀ n : ℕ, n &lt; m</text>
+    <text class="t-b" x="404" y="60">假：一個 m 必須同時大過所有 n</text>
+    <line class="line" x1="404" y1="168" x2="696" y2="168" marker-end="url(#qo-arrow)"/>
+    {[0,1,2,3,4,5,6].map((k) => (
+      <g>
+        <circle class={k < 4 ? 'dot' : 'dot'} cx={420 + k*40} cy="168" r="4"/>
+        <text class="t-ms" x={420 + k*40} y="196" text-anchor="middle">{k}</text>
+      </g>
+    ))}
+    <rect class="fill-accent" x="408" y="148" width="136" height="40"/>
+    <text class="t-s" x="476" y="138" text-anchor="middle">n &lt; m 成立</text>
+    <circle class="dot-accent" cx="580" cy="168" r="7"/>
+    <text class="t-a" x="580" y="128" text-anchor="middle">試試 m = 4</text>
+    <line class="line-accent" x1="580" y1="136" x2="580" y2="156"/>
+    <text class="t-b" x="580" y="228" text-anchor="middle">取 n = 4：4 &lt; 4 不成立</text>
+    <text class="t-s" x="404" y="296">不論選哪個 m，取 n＝m 都會失敗</text>
+  </svg>
+  </div>
+  <figcaption>兩個陳述只差量詞順序。左邊的 m 可以依 n 選；右邊得先選定一個 m，再面對所有 n。Lean 兩句都接受為合法命題，只有左邊證得出來。</figcaption>
+</figure>

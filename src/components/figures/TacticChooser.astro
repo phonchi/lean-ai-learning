@@ -1,0 +1,36 @@
+---
+// 第 5 章：先看目標長什麼樣，再選工具。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 352" role="img" aria-labelledby="tc-title tc-desc" style="min-width:620px">
+    <title id="tc-title">依目標的樣子選自動化工具</title>
+    <desc id="tc-desc">從「看 ⊢ 下方的目標」出發，分成五種情況：多項式等式用 ring；可由假設串起的線性不等式用 linarith；證明某式大於零或不小於零用 positivity；有可以化簡的式子用 simp；看起來像某條既有定理時用 exact? 搜尋。</desc>
+    <defs>
+      <marker id="tc-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <rect class="box-focal" x="16" y="148" width="160" height="60" rx="4"/>
+    <text class="t-b" x="96" y="174" text-anchor="middle">看目標長什麼樣</text>
+    <text class="t-s" x="96" y="194" text-anchor="middle">（⊢ 下方那一行）</text>
+    <line class="line" x1="176" y1="178" x2="208" y2="178"/>
+    <line class="line" x1="208" y1="40" x2="208" y2="312"/>
+    {[
+      { c: '等式，兩邊都是多項式', e: '(a - b) * (a + b) = a ^ 2 - b ^ 2', t: 'ring' },
+      { c: '線性不等式，可由假設串起來', e: 'h1 : x ≤ y,  h2 : y ≤ 3  ⊢  x ≤ 3', t: 'linarith' },
+      { c: '0 < … 或 0 ≤ …，每一項看得出正負', e: '0 < x ^ 2 + 1', t: 'positivity' },
+      { c: '有可以化簡的式子', e: 'x + 0 = x', t: 'simp' },
+      { c: '像是某條已知定理', e: '0 ≤ a + b（手上有 ha、hb）', t: 'exact?' },
+    ].map((row, i) => (
+      <g>
+        <line class="line" x1="208" y1={40 + i*68} x2="236" y2={40 + i*68} marker-end="url(#tc-arrow)"/>
+        <rect class="box" x="238" y={16 + i*68} width="466" height="48" rx="4"/>
+        <text class="t" x="254" y={36 + i*68}>{row.c}</text>
+        <text class="t-ms" x="254" y={55 + i*68}>{row.e}</text>
+        <line class="rule" x1="584" y1={22 + i*68} x2="584" y2={58 + i*68}/>
+        <text class="t-m" x="644" y={45 + i*68} text-anchor="middle">{row.t}</text>
+      </g>
+    ))}
+  </svg>
+  </div>
+  <figcaption>選工具之前先讀目標。五種情況都不符合時，回到紙上把證明拆成小步（用 have 一步一步寫）；非線性不等式可以試 nlinarith，並給它一個提示項。</figcaption>
+</figure>

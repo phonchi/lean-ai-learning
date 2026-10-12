@@ -1,0 +1,51 @@
+---
+// 第 1 章：Infoview 解剖。⊢ 上方是已知、下方是目標；每個 tactic 讓目標改變，直到 No goals。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 760 290" role="img" aria-labelledby="ps-title ps-desc" style="min-width:640px">
+    <title id="ps-title">Infoview 解剖：已知、目標與 tactic</title>
+    <desc id="ps-desc">左邊是一個 proof state：橫線上方列出已知的 P、Q 與它們的證據 hp、hq，橫線下方的 ⊢ P ∧ Q 是目標。執行 constructor 之後，目標分成 ⊢ P 與 ⊢ Q 兩個；分別用 exact hp 與 exact hq 交出證據後，Infoview 顯示 No goals。</desc>
+    <defs>
+      <marker id="ps-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <!-- 狀態一 -->
+    <text class="t-s" x="20" y="40">Infoview（游標在 constructor 之前）</text>
+    <rect class="box" x="20" y="56" width="200" height="150" rx="4"/>
+    <text class="t-m" x="36" y="88">P Q : Prop</text>
+    <text class="t-m" x="36" y="112">hp : P</text>
+    <text class="t-m" x="36" y="136">hq : Q</text>
+    <line class="rule" x1="28" y1="154" x2="212" y2="154"/>
+    <rect class="fill-accent" x="28" y="164" width="184" height="30"/>
+    <text class="t-m" x="36" y="184">⊢ P ∧ Q</text>
+    <text class="t-b" x="20" y="232">⊢ 上方：手上已知的東西</text>
+    <text class="t-b" x="20" y="256">⊢ 下方：還要證明的目標</text>
+    <!-- constructor：一個目標分成兩個 -->
+    <text class="t-m" x="230" y="124">constructor</text>
+    <line class="line" x1="220" y1="135" x2="320" y2="135"/>
+    <line class="line" x1="320" y1="92" x2="320" y2="178"/>
+    <line class="line" x1="320" y1="92" x2="346" y2="92" marker-end="url(#ps-arrow)"/>
+    <line class="line" x1="320" y1="178" x2="346" y2="178" marker-end="url(#ps-arrow)"/>
+    <rect class="box" x="348" y="60" width="170" height="64" rx="4"/>
+    <text class="t-ms" x="364" y="84">case left</text>
+    <text class="t-m" x="364" y="108">⊢ P</text>
+    <rect class="box" x="348" y="146" width="170" height="64" rx="4"/>
+    <text class="t-ms" x="364" y="170">case right</text>
+    <text class="t-m" x="364" y="194">⊢ Q</text>
+    <text class="t-s" x="348" y="232">一個目標變成兩個</text>
+    <text class="t-s" x="348" y="252">（每個目標上方的已知在此省略）</text>
+    <!-- exact：交出證據 -->
+    <text class="t-m" x="526" y="84">exact hp</text>
+    <text class="t-m" x="526" y="170">exact hq</text>
+    <line class="line" x1="518" y1="92" x2="604" y2="92"/>
+    <line class="line" x1="518" y1="178" x2="604" y2="178"/>
+    <line class="line" x1="604" y1="92" x2="604" y2="178"/>
+    <line class="line" x1="604" y1="135" x2="626" y2="135" marker-end="url(#ps-arrow)"/>
+    <rect class="box-focal" x="628" y="113" width="116" height="44" rx="4"/>
+    <text class="t-b" x="686" y="140" text-anchor="middle">No goals</text>
+    <text class="t-s" x="628" y="232">目標全部消掉</text>
+    <text class="t-s" x="628" y="252">＝證明完成</text>
+  </svg>
+  </div>
+  <figcaption>讀 Infoview 只要看兩塊：⊢ 上方是你手上有的東西，⊢ 下方是還要證明的目標。每寫一行 tactic，目標就改變一次；目標全部消失時，Infoview 顯示 No goals。</figcaption>
+</figure>

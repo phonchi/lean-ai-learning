@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-11T10:28:23.861142+00:00",
+  "timestamp_utc": "2026-10-12T15:31:27.193253+00:00",
   "toolchain": "leanprover/lean4:v4.34.1",
   "results": [
     {
@@ -35,6 +35,28 @@
       "check": "formal-source",
       "passed": true,
       "files_with_forbidden_tokens": []
+    },
+    {
+      "check": "file-ExtraA",
+      "command": [
+        "lake",
+        "env",
+        "lean",
+        "Course/ExtraA.lean"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "check": "file-ExtraB",
+      "command": [
+        "lake",
+        "env",
+        "lean",
+        "Course/ExtraB.lean"
+      ],
+      "exit_code": 0,
+      "passed": true
     },
     {
       "check": "file-First",
@@ -114,6 +136,17 @@
       "passed": true
     },
     {
+      "check": "file-University",
+      "command": [
+        "lake",
+        "env",
+        "lean",
+        "Course/University.lean"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
       "check": "file-VideoPractice",
       "command": [
         "lake",
@@ -144,10 +177,24 @@
         "propext"
       ],
       "theorems": [
+        "Course.extra_id",
+        "Course.extra_const",
+        "Course.extra_and_pair",
+        "Course.extra_and_swap_term",
+        "Course.extra_two_xy_steps",
+        "Course.extra_choose_ring",
+        "Course.extra_choose_linarith",
+        "Course.extra_choose_positivity",
+        "Course.extra_find_lemma",
+        "Course.extra_use_hypothesis",
+        "Course.extrab_icc_eq_range",
+        "Course.extrab_proj_kernel",
         "Course.first_proof",
         "Course.first_term",
         "Course.odd_sum",
         "Course.limits_add",
+        "Course.tendsto_iff_eps",
+        "Course.limits_add_eps",
         "Course.imp_trans",
         "Course.imp_trans_steps",
         "Course.and_swap",
@@ -160,6 +207,14 @@
         "Course.projection_fixed_iff",
         "Course.squares_nonneg",
         "Course.squares_zero",
+        "Course.uni_and_intro",
+        "Course.uni_or_swap",
+        "Course.uni_contrapositive",
+        "Course.uni_no_largest",
+        "Course.uni_square_lower_bound",
+        "Course.uni_gauss",
+        "Course.uni_two_xy",
+        "Course.uni_positivity",
         "Course.two_add_two",
         "Course.proof_as_function",
         "Course.add_double_negation",

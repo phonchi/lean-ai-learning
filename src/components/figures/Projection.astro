@@ -1,0 +1,47 @@
+---
+// 進階 2：把 v = (3, 1) 投影到直線 y = x，得到 P v = (2, 2)。
+const ox = 200, oy = 290, s = 50;
+const px = (a: number) => ox + a * s;
+const py = (b: number) => oy - b * s;
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 340" role="img" aria-labelledby="pj-title pj-desc" style="min-width:600px">
+    <title id="pj-title">向量 (3, 1) 投影到直線 y = x</title>
+    <desc id="pj-desc">座標平面上，向量 v 等於 (3, 1)。它投影到直線 y 等於 x 後成為 P v 等於 (2, 2)。v 減 P v 等於 (1, 負 1)，與直線 y 等於 x 垂直，方向和直線 y 等於負 x 相同；y 等於負 x 上的點會被 P 壓成零向量。直線 y 等於 x 上的點 w 等於 (3, 3) 經過 P 不會移動。</desc>
+    <defs>
+      <marker id="pj-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+      <marker id="pj-arrow-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk-accent" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <!-- 座標軸 -->
+    <line class="rule" x1={px(-1.6)} y1={oy} x2={px(4.4)} y2={oy}/>
+    <line class="rule" x1={ox} y1={py(-0.8)} x2={ox} y2={py(4.4)}/>
+    {[1, 2, 3, 4].map((k) => (<text class="t-ms" x={px(k)} y={oy + 18} text-anchor="middle">{k}</text>))}
+    {[1, 2, 3, 4].map((k) => (<text class="t-ms" x={ox - 10} y={py(k) + 4} text-anchor="end">{k}</text>))}
+    <!-- 直線 y = x 與 y = -x -->
+    <line class="line" x1={px(-0.8)} y1={py(-0.8)} x2={px(4.2)} y2={py(4.2)}/>
+    <text class="t-s" x={px(4.2) + 6} y={py(4.2) + 4}>y = x（像）</text>
+    <line class="line-dash" x1={px(-1.5)} y1={py(1.5)} x2={px(0.8)} y2={py(-0.8)}/>
+    <text class="t-s" x={px(-1.5)} y={py(1.5) - 8}>y = −x（核）</text>
+    <!-- v 與 P v -->
+    <line class="line" x1={ox} y1={oy} x2={px(3) - 4} y2={py(1) + 1.5} marker-end="url(#pj-arrow)"/>
+    <text class="t-m" x={px(3) + 8} y={py(1) + 5}>v = (3, 1)</text>
+    <line class="line-accent" x1={ox} y1={oy} x2={px(2) - 3} y2={py(2) + 3} marker-end="url(#pj-arrow-a)"/>
+    <text class="t-a" x={px(2) - 12} y={py(2) - 10} text-anchor="end">P v = (2, 2)</text>
+    <line class="line-dash" x1={px(3)} y1={py(1)} x2={px(2)} y2={py(2)}/>
+    <!-- 直線上的固定點 -->
+    <circle class="dot" cx={px(3)} cy={py(3)} r="4"/>
+    <text class="t-s" x={px(3) - 10} y={py(3) + 4} text-anchor="end">w = (3, 3)：P w = w</text>
+    <!-- 右側說明 -->
+    <line class="rule" x1="468" y1="40" x2="468" y2="300"/>
+    <text class="t-m" x="488" y="64">P = ½ [1 1; 1 1]</text>
+    <text class="t" x="488" y="104">P (a, b) = (m, m)</text>
+    <text class="t-s" x="488" y="124">其中 m = (a + b)/2</text>
+    <text class="t" x="488" y="164">v − P v = (1, −1)</text>
+    <text class="t-s" x="488" y="184">與 y = x 垂直（虛線）</text>
+    <text class="t" x="488" y="224">已在直線上的點不動</text>
+    <text class="t-s" x="488" y="244">所以 P (P v) = P v，即 P² = P</text>
+  </svg>
+  </div>
+  <figcaption>P 把每個向量換成「兩個座標的平均」組成的點，結果一定落在直線 y = x 上。虛線是被丟掉的部分 v − P v，它和直線垂直。已經在直線上的點（例如 w）再投影一次不會動，這就是 P² = P 的幾何意義。</figcaption>
+</figure>

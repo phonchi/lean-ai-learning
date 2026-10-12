@@ -1,7 +1,15 @@
-ℹ [1/371] Replayed Course.First
+ℹ [1/368] Replayed Course.First
 info: Course/First.lean:13:0: Course.first_proof (P : Prop) (h : P) : P
 info: Course/First.lean:14:0: 'Course.first_proof' does not depend on any axioms
-ℹ [1524/1526] Built Course.VideoPractice (203ms)
+ℹ [1523/1537] Replayed Course.VideoPractice
 info: Course/VideoPractice.lean:5:0: 2 + 2 = 5 : Prop
-✔ [1525/1526] Built Course (10s)
-Build completed successfully (1526 jobs).
+✔ [1532/1537] Built Course.University (1.1s)
+ℹ [1533/1537] Built Course.ExtraA (1.1s)
+info: Course/ExtraA.lean:10:0: 3 : ℕ
+info: Course/ExtraA.lean:11:0: fun n => n + 1 : ℕ → ℕ
+info: Course/ExtraA.lean:55:0: add_nonneg.{u_1} {α : Type u_1} {a b : α} [AddZeroClass α] [Preorder α] [AddLeftMono α] (ha : 0 ≤ a) (hb : 0 ≤ b) :
+  0 ≤ a + b
+✔ [1534/1537] Built Course.Limits (1.3s)
+✔ [1535/1537] Built Course.ExtraB (1.4s)
+✔ [1536/1537] Built Course (832ms)
+Build completed successfully (1537 jobs).

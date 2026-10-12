@@ -1,0 +1,54 @@
+---
+title: 大學數學 × Lean 對照
+description: 從你正在修的大學課程出發：每門課的哪些概念，在本站哪一章、用哪些 Lean 與 mathlib 寫法出現；以及國外大學實際開設的 Lean 課程與教材。
+sidebar:
+  order: 1
+---
+
+這一頁從**你正在修的課**出發，告訴你該從本站的哪裡讀起。
+
+先說清楚深度：本站是 Lean 的入門課，每門大學課程只取幾個代表性的定理來示範「課本證明怎麼變成 Lean」，**不會涵蓋整門課**。下表的「深度」欄會照實標示。
+
+## 課程對照表
+
+| 大學課程 | 課本上的概念 | 本站位置 | Lean／mathlib 寫法 | 深度 |
+| --- | --- | --- | --- | --- |
+| 離散數學 | 命題邏輯：且、或、非、蘊含 | [第 3 章](../../chapters/03-logic-and-quantifiers/)、[實戰 1](../../labs/01-proof-repair/) | `∧` `∨` `¬` `→`；`constructor`、`rcases`、`intro` | 入門完整 |
+| 離散數學 | 量詞與量詞順序 | [第 3 章](../../chapters/03-logic-and-quantifiers/) | `∀` `∃`；`intro`、`⟨見證, 證據⟩` | 入門完整 |
+| 離散數學、數學導論 | 證明方法：直接、分情況、逆否、反證 | [第 1 章](../../chapters/01-first-proof/)、[第 3 章](../../chapters/03-logic-and-quantifiers/) | `exact`、`rcases`、`by_contra` | 直接、分情況、逆否有完整示範；反證法只簡介 |
+| 離散數學 | 數學歸納法、Σ 記號 | [第 4 章](../../chapters/04-induction-and-sums/)、[實戰 2](../../labs/02-odd-sum/) | `induction`、`Finset.range`、`Finset.sum_range_succ` | 數個代表題 |
+| 離散數學、程式語言 | 函數、型別、函數合成 | [第 2 章](../../chapters/02-propositions-as-types/) | `P → Q` 就是函數；term 與 tactic | 概念介紹 |
+| 微積分（先備代數） | 代數恆等式、基本不等式 | [第 5 章](../../chapters/05-mathlib/) | `ring`、`linarith`、`nlinarith`、`positivity` | 數個代表題 |
+| 高等微積分 | 數列極限的 ε-N 定義、和的極限 | [進階 1](../../advanced/01-limits/) | `Metric.tendsto_atTop`、`Filter.Tendsto` | 一個定理的完整示範 |
+| 線性代數 | 矩陣乘法、投影矩陣 $P^2 = P$ | [進階 2](../../advanced/02-projection/) | `Matrix`、`!![…]`、`Matrix.mulVec` | 一個 2×2 例子 |
+| 線性代數、高等微積分 | 平方和為零，則每一項都是零 | [實戰 3](../../labs/03-sum-of-squares/) | `List`、`sq_nonneg` | 一個專題 |
+| 任何需要交證明作業的課 | 檢查自己的證明、把習題交給 AI 前先寫規格 | [第 6 章](../../chapters/06-agent-collaboration/)～[第 8 章](../../chapters/08-project-audit/) | Claude Code／Codex、`#print axioms` | 工作流程 |
+
+## 怎麼使用這張表
+
+- **正在修離散數學**：依序讀第 1、3、4 章。每讀完一節，挑一題課本習題，先寫紙上證明，再試著寫成 Lean。
+- **正在修微積分或高等微積分**：先讀第 1、3、5 章打基礎，再讀進階 1。進階 1 的證明會用到第 3 章的量詞和第 5 章的 `linarith`。
+- **正在修線性代數**：讀第 1、5 章後直接看進階 2；矩陣的記號與計算方式在那裡說明。
+- **任何課**：把作業交給 AI 之前，先讀第 6 章的「規格」寫法；拿到結果後，用第 8 章的查核流程判斷能不能相信它。
+
+每一章開頭都有一個「對應大學課程」框，說明這一章與課本內容的關係。
+
+## 國外大學的 Lean 課程與教材
+
+以下課程與教材都附有公開的網址，2026-10-12 實際連線確認過。它們大多是英文，適合讀完本站後繼續深入。
+
+### 大學部入門
+
+- **Fordham University，Math 2001**：Heather Macbeth 的 [*The Mechanics of Proof*](https://hrmacbeth.github.io/math2001/)。這本書為大學低年級的證明入門課而寫，用 Lean 教「怎麼寫證明」，定位和本站最接近，很適合當下一本書。
+- **Imperial College London**：Kevin Buzzard 的 [Formalising Mathematics 2024](https://github.com/ImperialCollegeLondon/formalising-mathematics-2024)（[課程講義](https://www.ma.imperial.ac.uk/~buzzard/xena/formalising-mathematics-2024/)）。這門課給數學系大學生，2024 年 1 到 3 月開設，使用 Lean 4。較早的版本使用已停止維護的 Lean 3，不要混用。
+- **Carnegie Mellon University，Interactive Theorem Proving（21-321）**：Jeremy Avigad 為數學與資工三年級學生開設的課，以 [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 為教材。課程列表見 [Avigad 的教學頁](https://www.andrew.cmu.edu/user/avigad/teaching.html)。
+- **Universität Bonn**：Floris van Doorn 的 [LeanCourse24](https://github.com/fpvandoorn/LeanCourse24)（2024/25 冬季學期），提供完整的 Lean 4 專案與安裝說明。
+
+### 教材與練習
+
+- [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/)：從數學系學生的角度出發，練習量很多，包含邏輯、數論、序列極限、線性代數等章節。
+- [*Logic and Proof*](https://avigad.github.io/logic_and_proof/)：一本邏輯與證明的教科書，書中包含用 Lean 建構自然演繹證明的章節，可以和本站第 3 章互相參照。**注意**：書中的 Lean 範例是 Lean 3 語法（例如 `variables`、`assume`），概念可以參照，但程式碼不能直接搬到本站的 Lean 4 專案中。
+- [Natural Number Game](https://github.com/leanprover-community/NNG4)：用遊戲的方式從零建立自然數與歸納法，可在 [Lean Game Server](https://adam.math.hhu.de/) 上直接遊玩，適合配合第 4 章。
+- [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/)：偏向 Lean 語言與型別理論本身，適合想深入理解第 2 章的讀者。
+
+更多參考資料與各章的影片建議，請見 [學習資源](../resources/)。

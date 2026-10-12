@@ -1,8 +1,22 @@
 import Course
+#print axioms Course.extra_id
+#print axioms Course.extra_const
+#print axioms Course.extra_and_pair
+#print axioms Course.extra_and_swap_term
+#print axioms Course.extra_two_xy_steps
+#print axioms Course.extra_choose_ring
+#print axioms Course.extra_choose_linarith
+#print axioms Course.extra_choose_positivity
+#print axioms Course.extra_find_lemma
+#print axioms Course.extra_use_hypothesis
+#print axioms Course.extrab_icc_eq_range
+#print axioms Course.extrab_proj_kernel
 #print axioms Course.first_proof
 #print axioms Course.first_term
 #print axioms Course.odd_sum
 #print axioms Course.limits_add
+#print axioms Course.tendsto_iff_eps
+#print axioms Course.limits_add_eps
 #print axioms Course.imp_trans
 #print axioms Course.imp_trans_steps
 #print axioms Course.and_swap
@@ -15,6 +29,14 @@ import Course
 #print axioms Course.projection_fixed_iff
 #print axioms Course.squares_nonneg
 #print axioms Course.squares_zero
+#print axioms Course.uni_and_intro
+#print axioms Course.uni_or_swap
+#print axioms Course.uni_contrapositive
+#print axioms Course.uni_no_largest
+#print axioms Course.uni_square_lower_bound
+#print axioms Course.uni_gauss
+#print axioms Course.uni_two_xy
+#print axioms Course.uni_positivity
 #print axioms Course.two_add_two
 #print axioms Course.proof_as_function
 #print axioms Course.add_double_negation

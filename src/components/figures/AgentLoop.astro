@@ -1,0 +1,48 @@
+---
+// 第 6 章：學生 → agent → Lean → 學生判讀的協作迴圈。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 780 330" role="img" aria-labelledby="al-title al-desc" style="min-width:640px">
+    <title id="al-title">和 coding agent 協作的迴圈</title>
+    <desc id="al-desc">第一步由學生寫規格，第二步 agent 修改並編譯，第三步 Lean 回報錯誤與警告，第四步學生判讀 diff 與陳述。通過就接受並記錄；沒有通過或看不懂，就修正規格再跑一輪，最多三輪。</desc>
+    <defs>
+      <marker id="al-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+      <marker id="al-arrow-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk-accent" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <!-- 上排：規格 → agent → Lean -->
+    <rect class="box" x="20" y="40" width="190" height="68" rx="4"/>
+    <text class="t-b" x="36" y="68">① 你寫規格</text>
+    <text class="t-s" x="36" y="92">檔名、定理、不可改陳述</text>
+
+    <line class="line" x1="210" y1="74" x2="282" y2="74" marker-end="url(#al-arrow)"/>
+    <rect class="box-soft" x="290" y="40" width="190" height="68" rx="4"/>
+    <text class="t-b" x="306" y="68">② agent 修改、編譯</text>
+    <text class="t-s" x="306" y="92">只動 sorry 所在的證明</text>
+
+    <line class="line" x1="480" y1="74" x2="552" y2="74" marker-end="url(#al-arrow)"/>
+    <rect class="box-soft" x="560" y="40" width="200" height="68" rx="4"/>
+    <text class="t-b" x="576" y="68">③ Lean 回報</text>
+    <text class="t-s" x="576" y="92">錯誤、sorry 警告、exit code</text>
+
+    <!-- ③ → ④ -->
+    <line class="line" x1="660" y1="108" x2="660" y2="192" marker-end="url(#al-arrow)"/>
+
+    <!-- 下排：判讀 → 接受 -->
+    <rect class="box-focal" x="560" y="200" width="200" height="68" rx="4"/>
+    <text class="t-b" x="576" y="228">④ 你來判讀</text>
+    <text class="t-s" x="576" y="252">git diff、陳述、axioms</text>
+
+    <line class="line-accent" x1="560" y1="234" x2="488" y2="234" marker-end="url(#al-arrow-a)"/>
+    <text class="t-s" x="494" y="224">通過</text>
+    <rect class="box" x="290" y="200" width="190" height="68" rx="4"/>
+    <text class="t-b" x="306" y="228">接受修改</text>
+    <text class="t-s" x="306" y="252">寫進紀錄，附數學說明</text>
+
+    <!-- ④ → ①：回圈 -->
+    <polyline class="line-dash" points="660,268 660,304 115,304 115,116" marker-end="url(#al-arrow)"/>
+    <text class="t-s" x="132" y="296">沒通過或看不懂：修正規格再跑一輪（最多 3 輪），之後停下回到數學</text>
+  </svg>
+  </div>
+  <figcaption>agent 只負責②；①與④都是你的工作。Lean 的回報③是唯一可以直接相信的訊號，但它只檢查「檔案裡寫的陳述」，所以④不能省。</figcaption>
+</figure>

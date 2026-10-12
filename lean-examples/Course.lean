@@ -6,3 +6,6 @@ import Course.Squares
 import Course.Limits
 import Course.Projection
 import Course.VideoPractice
+import Course.University
+import Course.ExtraA
+import Course.ExtraB

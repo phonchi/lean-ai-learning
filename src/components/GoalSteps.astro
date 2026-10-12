@@ -1,0 +1,19 @@
+---
+// 靜態列出 proof state 的逐步變化：每一步是「執行的 tactic → 之後的目標」。
+interface Step { tactic: string; goal: string; note: string; }
+interface Props { title: string; start: string; steps: Step[]; }
+const { title, start, steps } = Astro.props;
+---
+<figure class="goal-steps">
+  <figcaption>{title}</figcaption>
+  <div class="gs-state gs-start"><span class="gs-label">開始</span><pre>{start}</pre></div>
+  <ol>
+    {steps.map((s) => (
+      <li>
+        <code class="gs-tactic">{s.tactic}</code>
+        <p class="gs-note">{s.note}</p>
+        <div class="gs-state"><pre>{s.goal}</pre></div>
+      </li>
+    ))}
+  </ol>
+</figure>

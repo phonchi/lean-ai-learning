@@ -1,216 +1,209 @@
 ---
 title: 第 1 章　第一個 Lean 證明
-description: 安裝 VS Code 與 Lean、讀懂 proof state、寫出第一個證明，並第一次在不放棄判斷力的前提下請 AI 幫忙。
+description: 打開 VS Code 與 Lean、讀懂 Infoview 上的已知與目標、對照紙上證明寫出第一個 Lean 證明，並第一次請 AI 解釋而不是代勞。
 sidebar:
   order: 1
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import PaperVsLean from '../../../components/PaperVsLean.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import Term from '../../../components/Term.astro';
+import GoalSteps from '../../../components/GoalSteps.astro';
+import AskAI from '../../../components/AskAI.astro';
+import ProofState from '../../../components/figures/ProofState.astro';
+
+<UniCourse courses="離散數學 · 數學證明導論">
+
+離散數學或證明導論的第一份作業，通常是「由已知條件推出結論」：先寫出已知什麼、要證什麼，再一步一步推。這一章做的是同一件事，只是改由 Lean 在旁邊檢查每一步，並隨時告訴你「現在手上有什麼、還差什麼」。
+
+</UniCourse>
 
 ## 本章目標
 
-讀完本章，你應該能夠：
-
-1. 在 VS Code 中打開課程專案，看到 Lean 的 **Infoview** 面板。
-2. 讀懂一個 **proof state**：哪些是已知假設、哪一行是待證目標。
-3. 逐行執行一個短證明，看著目標被「消掉」。
-4. 知道 `sorry` 是什麼，以及為什麼「沒有錯誤訊息」不等於「證明完成」。
-5. 第一次請 AI 解釋 Lean 的狀態，同時清楚哪些判斷仍然是你的責任。
+1. 在 VS Code 中打開課程專案，讀懂 Infoview 上的「已知」與「目標」。
+2. 把一個課本上的短證明，一行一行對到 Lean，看著目標被消掉。
+3. 知道「沒有紅線」不等於「證明完成」，會用 `#print axioms` 檢查。
 
 如果你還沒有安裝環境，請先完成 [環境設定](../../guides/setup/)，再回到這裡。
 
 ## 為什麼要讓電腦檢查證明？
 
-在數學課上，一個證明是否正確，通常由讀者（老師、審稿人、同學）判斷。讀者會跳過自己認為「顯然」的步驟，也可能漏看一個少寫的條件。證明輔助系統（proof assistant）換了一種做法：我們把定理與證明寫成一種精確的形式語言，再交給一個小而嚴格的程式去檢查每一步是否真的由規則推得。
+在數學課上，證明對不對，通常由讀者（老師、助教、審稿人）判斷。讀者會跳過自己覺得「顯然」的步驟，也可能漏看一個少寫的條件。
 
-Lean 就是這樣的系統。它同時是一個程式語言與一個證明檢查器。你寫下的每一個定理，都會被 Lean 讀成一個精確的陳述；你寫下的每一個證明，都會被逐步檢查。只要有一步說不通，Lean 就會在那一行標出紅色波浪線。
+Lean 換了一種做法：我們把定理與證明寫成精確的形式語言，再交給一個小而嚴格的程式檢查每一步。只要有一步說不通，Lean 就在那一行標出紅色波浪線。
 
 這帶來兩個直接後果：
 
 - **好處**：被 Lean 接受的證明，不會因為「看漏了一個 case」而出錯。
-- **代價**：Lean 只檢查「你寫下的陳述」是否被證明，**不會**替你檢查這個陳述是不是你心中想的那個數學命題。把數學翻譯成 Lean 的那一步，責任在人。
+- **代價**：Lean 只檢查「你寫下的陳述」有沒有被證明，**不會**替你檢查這個陳述是不是你心中的那個數學命題。把數學翻成 Lean 的那一步，責任在人。
 
-這個代價會貫穿整門課。當我們之後請 AI 協助時，它尤其重要：AI 可能為了讓 Lean 不再報錯，而悄悄把題目改成另一個更容易的題目。
+這個代價會貫穿整門課。之後請 AI 幫忙時尤其要記得：AI 可能為了讓 Lean 不再報錯，悄悄把題目改成另一個比較容易的題目。
 
 ## 打開第一個檔案
 
-請先<a href={`${import.meta.env.BASE_URL}downloads/lean-ai-examples.zip`}>下載實作專案</a>，解壓縮後，用 VS Code 的「開啟資料夾」打開**含有 `lean-toolchain` 檔案的那一層**目錄。接著打開 `Course/First.lean`。
+請先<a href={`${import.meta.env.BASE_URL}downloads/lean-ai-examples.zip`}>下載實作專案</a>，解壓縮後，用 VS Code 的「開啟資料夾」打開**含有 `lean-toolchain` 檔案的那一層**目錄，再打開 `Course/First.lean`。
 
-`Course/First.lean` 只用到 Lean 本身，沒有 import mathlib，所以通常很快就處理完；之後打開有 `import Mathlib...` 的檔案時，第一次可能要等比較久。處理期間，編輯器會顯示處理中的標示。處理完成後，把游標放在任何一行證明上，右側的 **Lean Infoview** 就會顯示該處的 proof state。如果 Infoview 沒有自動出現，可以在 VS Code 命令面板中搜尋「Lean 4: Infoview: Toggle Infoview」。
+處理完成後，把游標放在任何一行證明上，右側的 **Infoview** 面板就會顯示那個位置的狀態。第一次打開時可能要等一下。Infoview 沒有出現，可以在 VS Code 命令面板搜尋「Lean 4: Infoview: Toggle Infoview」；其他狀況請看 [環境設定](../../guides/setup/) 的「確認安裝成功」與「常見問題」。
 
-## 讀懂 proof state
+## 先在紙上，再到 Lean
 
-先看一個最小的例子（這是說明用的片段）：
+先看一個離散數學第一週就會遇到的證明：「若 $P$ 成立且 $Q$ 成立，則 $P \land Q$ 成立」。左欄是作業上的寫法，右欄是對應的 Lean。
 
-```lean
-example (p q : Prop) (hp : p) (hq : q) : p ∧ q := by
-  constructor
-```
+<PaperVsLean file="Course/University.lean" region="uni-and-intro" rows={["2", "3", "4", "5"]}>
+  <Fragment slot="p1">**定理**：設 $P, Q$ 是命題。已知 $P$ 成立、$Q$ 成立，則 $P \land Q$ 成立。</Fragment>
+  <Fragment slot="p2">要證明「且」，分成兩件事：證 $P$，再證 $Q$。</Fragment>
+  <Fragment slot="p3">第一件：$P$ 就是已知條件。</Fragment>
+  <Fragment slot="p4">第二件：$Q$ 也是已知條件。證畢。</Fragment>
+</PaperVsLean>
 
-把游標放在 `by` 之後、`constructor` 之前，Infoview 會顯示類似：
+先讀第一行。`theorem` 後面是定理名稱；冒號前的括號是參數與已知條件，`(P Q : Prop)` 是「P、Q 是命題」，`(hp : P)` 是「P 成立，證據叫 hp」；冒號後、`:=` 前的 `P ∧ Q` 是結論。`by` 之後就是證明。
 
-```text
-p q : Prop
-hp : p
-hq : q
-⊢ p ∧ q
-```
+<Term term="tactic" short="證明中的一個動作，例如「分成兩個子目標」或「交出現成的證據」。">
 
-讀法如下：
+`by` 後面一行一行寫的指令就是 tactic。上面的 `constructor` 與 `exact` 都是。每執行一個 tactic，Infoview 就會顯示新的「已知」與「目標」。tactic 不是魔法，它只是把課本上「我們接下來證明……」這類句子，變成電腦能檢查的步驟。
 
-- `⊢` **上方**是「目前手上有的東西」：`p` 與 `q` 是兩個命題，`hp` 是 `p` 成立的證據，`hq` 是 `q` 成立的證據。
-- `⊢` **下方**是「還要證明的目標」：`p ∧ q`。
+</Term>
 
-`constructor` 的意思是：「要證明一個『且』，就分別證明兩邊。」執行後，目標會分成兩個：
+## 讀懂 Infoview
 
-```text
-case left
-⊢ p
-case right
-⊢ q
-```
+把游標放在 `constructor` 那一行之前，Infoview 顯示的東西叫做這個位置的**證明狀態**：
 
-（實際顯示時每個目標上方都會重複列出假設，這裡省略。）接著用 `exact hp` 交出第一個目標的證據、`exact hq` 交出第二個，Infoview 最後會顯示 **No goals**。這就是一個完整證明的節奏：**讀目標 → 選一個動作 → 再讀新的目標**。
+<Term term="proof state（證明狀態）" short="證明寫到某一行時，「手上有什麼」與「還要證什麼」的清單。">
 
-## 課程的第一個證明
+Infoview 中以 `⊢` 為分界：上方每一行是一個已知的東西（變數或假設），格式是「名字 : 型別」；下方是目前的目標。目標可能不只一個，這時每個目標會各自列出它能用的已知，並以 `case 名稱` 標示。
 
-下面是課程專案中的第一個證明，取自 `Course/First.lean` 的 `first-proof` 區段：
+</Term>
+
+<ProofState />
+
+接下來每寫一行，目標就變一次。下面列出 `uni_and_intro` 每一步之後 Infoview 的內容，你可以在 VS Code 中逐行移動游標對照：
+
+<GoalSteps
+  title="uni_and_intro 的目標如何一步步變化"
+  start={"P Q : Prop\nhp : P\nhq : Q\n⊢ P ∧ Q"}
+  steps={[
+    { tactic: 'constructor', note: '「要證且，就分別證明兩邊」。一個目標變成兩個。', goal: 'case left\n⊢ P\n\ncase right\n⊢ Q' },
+    { tactic: '· exact hp', note: '處理第一個目標：hp 剛好是 P 的證據，直接交出。', goal: 'case right\n⊢ Q' },
+    { tactic: '· exact hq', note: '處理剩下的目標：交出 Q 的證據。', goal: 'No goals' },
+  ]}
+/>
+
+（為了版面，這裡省略了每個目標上方重複列出的 `P Q : Prop`、`hp : P`、`hq : Q`。）
+
+行首的 `·` 表示「現在專心處理其中一個目標」，讓 Lean 的結構和紙上的「第一件、第二件」一樣清楚。整個證明的節奏就是：**讀目標 → 選一個動作 → 再讀新的目標**，直到 No goals。
+
+## 課程檔案的第一個證明
+
+`Course/First.lean` 的 `first-proof` 區段更短：
 
 <LeanCode file="Course/First.lean" region="first-proof" />
 
-請在 VS Code 中做以下事情，不要只用眼睛讀：
+**先讀陳述，再看證明。** 只讀 `theorem` 那一行，用一句完整的中文說出它在主張什麼：「對任意命題 $P$，若 $P$ 成立（證據叫 `h`），則 $P$ 成立。」一句好的翻譯要同時說出三件事：
 
-1. 先只讀 `theorem` 或 `example` 那一行（冒號之後、`:=` 之前），用一句中文說出它在主張什麼。變數是什麼型別？有沒有假設？
-2. 把游標依序放在 `by` 之後的每一行開頭與結尾，記下 Infoview 的目標如何變化。
-3. 找出讓目標「變成 No goals」的最後一步。
+1. 對哪些物件成立：這裡是「任意命題 P」。以後遇到 `(n : ℕ)` 就是「任意自然數 n」，而「對所有自然數」和「對所有實數」是不同的陳述。
+2. 有哪些前提：這裡是 `h : P`。
+3. 結論是什麼：這裡是 `P`。
 
-這三步看似繁瑣，但它是之後所有工作的基本功。特別是第 1 步：**先讀懂陳述，再看證明**。
+再把游標放到 `exact h` 前後：之前目標是 `⊢ P`，`h : P` 就在上方；之後變成 No goals。
 
-## 同一件事的另一種寫法
-
-Lean 的證明有兩種常見風格。上面用 `by` 開頭、一行一個指令的叫 **tactic 模式**；另一種是直接寫出一個「證明物件」，叫 **term 模式**。`first-term` 區段把同一類的事用 term 寫出：
+同一個證明也可以不用 `by`，直接寫成一個函數，這就是 `first-term` 區段。為什麼「證明」能寫成函數，是 [第 2 章](../02-propositions-as-types/) 的主題，現在先看過就好：
 
 <LeanCode file="Course/First.lean" region="first-term" />
 
-你現在不需要完全理解 term 模式，[第 2 章](../02-propositions-as-types/) 會解釋為什麼「證明」可以被當成一個值。目前只要注意：兩種寫法最後都被 Lean 的同一個核心（kernel）檢查。
+## `sorry` 與 `#print axioms`：檢查有沒有偷懶
 
-## 查詢與檢查：`#check` 與 `#print axioms`
+寫證明時，可以先用 `sorry` 暫時代替還沒寫完的部分。Lean 遇到 `sorry` **不會**標紅線，只在定理名稱下出現黃色警告，大意是 declaration uses `sorry`；在終端機執行 `lake env lean 檔名` 也通常會成功結束（exit code 0）。
 
-`first-check` 區段示範兩個你會一直用到的指令：
+這是故意的設計：`sorry` 讓你先搭好整體結構，晚點再補細節。但也因此：
+
+> **查核提示**：沒有紅線、編譯成功、exit code 0，都不代表證明完成。對你的定理執行 `#print axioms 定理名稱`，輸出中**沒有 `sorryAx`**，才代表沒有偷懶。
+
+`first-check` 區段示範了兩個會一直用到的指令：
 
 <LeanCode file="Course/First.lean" region="first-check" />
 
-- `#check 名稱`：顯示這個名字的「型別」，對定理而言就是它的陳述。當你不確定一個 mathlib 引理到底說什麼時，先 `#check`。
-- `#print axioms 名稱`：列出這個定理最終依賴了哪些公理。
+- `#check 名稱`：顯示這個名字的型別。對定理而言就是它的陳述。不確定一條引理在說什麼時，先 `#check`。
+- `#print axioms 名稱`：列出這個定理最後依賴了什麼。`first_proof` 的輸出是 `'Course.first_proof' does not depend on any axioms`。如果某處（包括它引用的別的定理）還有 `sorry`，這裡就會出現 `sorryAx`。
 
-### `sorry`：暫時跳過，但不是完成
+<details>
+<summary>補充：輸出裡出現其他名字怎麼辦？（標準公理）</summary>
 
-試著把某個證明的內容整個換成 `sorry`。你會發現 Lean **沒有**紅色錯誤，只在定理名稱下出現黃色警告，訊息大意是 declaration uses `sorry`。如果你在專案根目錄用終端機檢查這個檔案（例如 `lake env lean Course/First.lean`），它通常也會成功結束（exit code 0），只多印一行警告。
+用到 mathlib 的定理，`#print axioms` 常會列出 `propext`、`Classical.choice`、`Quot.sound` 這三個名字。它們是 Lean 與 mathlib 普遍使用的標準公理（命題外延性、選擇公理、商型別的公理），出現它們**不是**作弊。
 
-這是故意的設計：`sorry` 讓你先寫好整體結構，晚點再補細節。但這也代表：
+真正要警覺的只有兩種：`sorryAx`，以及任何你或 AI 自己用 `axiom` 宣告的新公理。後者等於「直接宣布某件事成立」，Lean 會接受，但它沒有被證明。[第 8 章](../08-project-audit/) 的查核流程會把這件事做成固定步驟。
 
-> **編譯成功、沒有紅線、exit code 0，都不代表證明完成。**
+</details>
 
-可靠的檢查方法是對你的定理執行 `#print axioms`。如果輸出中出現 `sorryAx`，就表示某處（可能在你引用的另一個定理裡）仍然有 `sorry`。
+## 和 AI 一起學
 
-另一方面，你也常會看到 `propext`、`Classical.choice`、`Quot.sound` 這三個名字。它們是 Lean 與 mathlib 普遍使用的標準公理，出現它們**不是**作弊。真正要警覺的是 `sorryAx`，以及任何你或 AI 自己用 `axiom` 宣告的新公理。
+本課程的主線是「和 AI 一起把數學形式化」。第一次的任務刻意很小：**請 AI 解釋，而不是請 AI 寫證明。** 把上面 `constructor` 之後的 Infoview 內容整段複製給 AI，請它逐行說明。
 
-## AI 初體驗：請它解釋，而不是請它代勞
+<AskAI
+  task="把一個 proof state 交給 AI，請它解釋每一行，再由你回到 Lean 逐句核對。"
+  prompt={"我在學 Lean 4，以下是 Infoview 顯示的 proof state。請用中文逐行解釋：\n1. ⊢ 上方每一行代表什麼；\n2. 目前有幾個目標，各是什麼；\n3. 有哪一兩個 tactic 可能推進目前的目標，執行後目標會變成什麼。\n請不要直接給我完整證明。\n\n（在這裡貼上 Infoview 內容）"}
+>
 
-本課程的主線是「和 AI 一起把數學形式化」。從第一章就開始，但第一次的任務刻意很小：**請 AI 解釋，而不是請 AI 寫證明。**
+- AI 對**已知**與**目標**的描述，和 Infoview 的實際文字一致嗎？目標的個數有沒有算對？
+- 找出它說「執行某個 tactic 之後，目標會變成……」的句子，把那個 tactic 實際寫進 Lean，比對 Infoview。
+- 把 AI 的說法和 Infoview 並排寫下，標記「一致」或「不一致」；不一致時以 Lean 為準，並寫一句話說明 AI 錯在哪裡。這個紀錄習慣，之後會變成實戰中的修復紀錄。
 
-找一個 proof state，例如上面 `constructor` 之後的狀態，把 Infoview 的文字整段複製給你使用的 AI 助理，並這樣問：
+</AskAI>
 
-```text
-以下是 Lean 4 的 proof state。請用中文逐行解釋：
-1. ⊢ 上方每一行代表什麼；
-2. 目前的目標是什麼；
-3. 有哪一兩個 tactic 可能推進這個目標，以及為什麼。
-請不要直接給我完整證明。
+AI 的解釋可能很流暢但不正確。Lean 會檢查證明，但**沒有東西會檢查 AI 的解釋**，除了你。在 [第 6 章](../06-agent-collaboration/) 之前，我們都只讓 AI 扮演「會說話的參考書」。
 
-（貼上 Infoview 內容）
-```
-
-讀它的回答時，請自己確認三件事：
-
-- 它對**量詞**與**假設**的描述，是否和 Infoview 中實際的文字一致？
-- 它提到的 tactic，你能否在 Lean 裡實際試出來，而且結果和它描述的相同？
-- 如果它說錯了，你能指出是哪一句嗎？
-
-AI 的解釋可能流暢但不正確。Lean 會檢查證明，但**沒有東西會檢查 AI 的解釋**，除了你。在 [第 6 章](../06-agent-collaboration/) 之前，我們都只讓 AI 扮演「會說話的參考書」。
-
-如果你沒有可用的 AI 帳號，也完全沒問題：本課程每一個 AI 步驟都可以改成「自己讀 Infoview、自己寫下解釋」，學到的東西是一樣的。
+如果你沒有可用的 AI 帳號也沒關係：每一個 AI 步驟都可以改成「自己讀 Infoview、自己寫下解釋」，學到的東西是一樣的。
 
 ## 練習
 
-### 練習 1.1　讀陳述
+### 練習 1.1　翻譯並證明
 
-不看證明，只讀 `first-proof` 區段的陳述行，用一句完整的中文寫出它在說什麼，包括每個變數的型別。
+把「設 $P, Q$ 是命題。若 $P$ 成立且 $Q$ 成立，則 $Q \land P$ 成立」翻成 Lean 並證明。請在專案根目錄新增自己的練習檔（例如 `Scratch.lean`），不要改 `Course/` 中的課程檔案。
 
-<details>
-<summary>提示</summary>
-
-冒號 `:` 左邊括號裡的是「參數」：名字與它的型別。冒號右邊、`:=` 之前的是結論。像 `(n : ℕ)` 表示「對任意自然數 n」。
-
-</details>
-
-<details>
-<summary>解答方向</summary>
-
-一個好的翻譯會同時寫出：(1) 對哪些物件成立（「對所有自然數 n」之類）；(2) 有沒有前提；(3) 結論是什麼。如果你的句子沒提到型別，請補上：在 Lean 中，「對所有自然數」與「對所有實數」是不同的陳述。
-
-</details>
-
-### 練習 1.2　看見 `sorry`
-
-在專案根目錄新增一個你自己的練習檔，例如 `Scratch.lean`（不要改 `Course/` 中的課程檔案），寫入下面的 `example`，用 `sorry` 當證明，然後觀察 Infoview 與編輯器中的訊息。也可以在終端機執行 `lake env lean Scratch.lean`，確認它雖然印出警告，仍然成功結束。接著把 `sorry` 換成正確的證明。
+1. 先只寫陳述，證明用 `sorry`，觀察黃色警告；再加一行 `#print axioms my_and_swap`，看看輸出中的 `sorryAx`。
+2. 對照本章的 `uni_and_intro`，檢查參數、假設與結論的**順序**是否和原句一致。
+3. 把 `sorry` 換成真正的證明，再看一次 `#print axioms`。
 
 ```lean
-example (p : Prop) (hp : p) : p := by
+theorem my_and_swap : sorry := by
   sorry
+
+#print axioms my_and_swap
 ```
 
 <details>
 <summary>提示</summary>
 
-目標是 `p`，而假設中剛好有一個 `hp : p`。要「交出」一個剛好符合目標的證據，用哪個 tactic？
+陳述的形狀和 `uni_and_intro` 幾乎一樣：`(P Q : Prop) (hp : P) (hq : Q) : 結論`。注意結論是 `Q ∧ P`，不是 `P ∧ Q`，所以 `constructor` 之後第一個目標是 `Q`。
 
 </details>
 
 <details>
 <summary>解答</summary>
 
-把 `sorry` 換成 `exact hp`。改好之後黃色警告應該消失。再執行一次 `lake env lean Scratch.lean`，輸出中應該不再有 sorry 警告。
+```lean
+theorem my_and_swap (P Q : Prop) (hp : P) (hq : Q) : Q ∧ P := by
+  constructor
+  · exact hq
+  · exact hp
 
-</details>
+#print axioms my_and_swap
+```
 
-### 練習 1.3　檢查 AI 的解釋
-
-用上面的 Prompt 請 AI 解釋 `first-proof` 中任一行之後的 proof state。找出它的回答中**至少一處**你需要回到 Lean 實際驗證的說法，並驗證它。
-
-<details>
-<summary>提示</summary>
-
-最容易驗證的說法是「執行某某 tactic 之後，目標會變成……」。把游標移到那一行之後，直接比對。
-
-</details>
-
-<details>
-<summary>參考做法</summary>
-
-把 AI 的說法與 Infoview 實際內容並排寫下，標記「一致」或「不一致」。若不一致，以 Lean 為準，並寫一句話說明 AI 錯在哪裡。這份紀錄的習慣，會在之後的實戰中變成正式的修復紀錄。
+改好之後黃色警告消失，`#print axioms` 的輸出變成 `'my_and_swap' does not depend on any axioms`。如果你把結論寫成 `P ∧ Q`，Lean 一樣會接受，但那是另一個陳述；這正是「Lean 只檢查你寫下的陳述」的第一個例子。
 
 </details>
 
 ## 本章小結
 
-- proof state 中，`⊢` 上方是假設，下方是目標。
-- 證明的節奏是：讀目標、做一步、再讀目標，直到 No goals。
-- `sorry` 讓檔案能編譯，但不代表完成；用 `#print axioms` 檢查有沒有 `sorryAx`。
+- Infoview 中，`⊢` 上方是已知，下方是目標。證明的節奏是：讀目標、做一步、再讀目標，直到 No goals。
+- 課本上「要證且，分別證兩邊」對應 `constructor`；「這就是已知條件」對應 `exact`。
+- `sorry` 讓檔案能編譯，但不代表完成；`#print axioms` 的輸出沒有 `sorryAx`，才代表沒有偷懶。
 - AI 從第一章就能幫你**解釋**，但陳述的意義、量詞與假設，必須由你確認。
 
-## 延伸閱讀與觀看
+## 延伸閱讀
 
 - 官方入口 [Lean: Learn](https://lean-lang.org/learn/) 與社群的 [Learning Lean 4](https://leanprover-community.github.io/learn.html)。
+- 與大學課程的對照，可看本站的 [大學數學 × Lean 對照](../../guides/university-map/)。
 - 觀看建議：AI101 系列第 1 集〈[電腦憑什麼說一個數學證明是對的？](https://www.youtube.com/watch?v=STMP2kFx3fw)〉（約 9 分鐘），可以作為本章「為什麼要讓電腦檢查」的補充。本站僅依影片標題與說明推薦，未逐字核對影片內容。
 - 下一章：[命題為何是型別](../02-propositions-as-types/)。

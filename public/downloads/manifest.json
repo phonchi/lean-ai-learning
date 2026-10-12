@@ -1,10 +1,12 @@
 {
   "archive": "lean-ai-examples.zip",
-  "sha256": "23c74e8d04e9b9b0018a390ae1953e325558cbcc3a7c53261a9d29dee53cc647",
-  "file_count": 21,
+  "sha256": "3895836e4a87cca225602cf05537a81fff5d661148e4bfade66f626f552081f7",
+  "file_count": 24,
   "files": [
     "AGENTS.md",
     "CLAUDE.md",
+    "Course/ExtraA.lean",
+    "Course/ExtraB.lean",
     "Course/First.lean",
     "Course/Induction.lean",
     "Course/Limits.lean",
@@ -12,6 +14,7 @@
     "Course/Mathlib.lean",
     "Course/Projection.lean",
     "Course/Squares.lean",
+    "Course/University.lean",
     "Course/VideoPractice.lean",
     "Course.lean",
     "Exercises/OddSum.lean",

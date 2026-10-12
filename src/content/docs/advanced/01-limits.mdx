@@ -1,148 +1,275 @@
 ---
 title: 進階 1　實數序列和的極限
-description: 從 ε-N 定義出發，證明兩個收斂實數序列之和收斂到極限之和，並認識 mathlib 用 filter 表達極限的方式。
+description: 把高等微積分的 ε-N 定義與「和的極限」ε/2 證明逐行翻成 Lean，再說明 mathlib 的 Tendsto 與課本定義等價，以及一行的 mathlib 版本。
 sidebar:
   order: 1
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import PaperVsLean from '../../../components/PaperVsLean.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import Term from '../../../components/Term.astro';
+import AskAI from '../../../components/AskAI.astro';
+import AIDialogue from '../../../components/AIDialogue.astro';
+import EpsN from '../../../components/figures/EpsN.astro';
 
-## 本單元目標
+<UniCourse courses="高等微積分 · 微積分（數列極限）">
 
-1. 回顧實數序列極限的 ε-N 定義與「和的極限」的 ε/2 論證。
-2. 看懂 mathlib 中 `Tendsto u atTop (𝓝 a)` 的寫法，並知道它如何轉換回 ε-N 形式。
-3. 比較「直接使用 mathlib 引理」與「從定義出發」兩種證明方式，各自的價值。
-4. 對極限陳述做翻譯查核：索引型別、不等號嚴格與否、量詞順序。
+高等微積分一開始就要用 ε-N 定義證明數列極限的性質，「兩個收斂數列相加仍收斂，極限是極限的和」是最典型的第一題。課本上那套「取 ε/2、取 N = max(N₁, N₂)、三角不等式」，在 Lean 中幾乎一行對一行。
+
+</UniCourse>
 
 **前置**：[第 3 章](../../chapters/03-logic-and-quantifiers/)（量詞）、[第 5 章](../../chapters/05-mathlib/)（搜尋與 `linarith`）、[第 8 章](../../chapters/08-project-audit/)（查核）。
 
-## 數學回顧
+## 本單元目標
 
-實數序列 (aₙ) 收斂到 A，意思是：
+1. 把課本的 ε-N 定義與「和的極限」的 ε/2 證明，一行一行翻成 Lean。
+2. 知道 mathlib 寫極限用的 `Tendsto` 和課本的 ε-N 定義等價，需要時能切換。
+3. 查核極限陳述：量詞順序、嚴格不等號、索引型別。
 
-> 對每個 ε > 0，存在 N，使得對所有 n ≥ N，都有 |aₙ − A| 小於 ε。
+## 課本上的定義
 
-量詞順序是「∀ ε，∃ N，∀ n」：N 可以依賴 ε，但不能依賴 n。
+實數數列 $(a_n)$ 收斂到 $A$，意思是：
 
-**定理**：若 aₙ → A 且 bₙ → B，則 aₙ + bₙ → A + B。
+> 對每個 $\varepsilon > 0$，存在 $N$，使得對所有 $n \ge N$，都有 $|a_n - A| < \varepsilon$。
 
-**證明**：給定 ε > 0。由 aₙ → A，取 ε/2，存在 N₁ 使得 n ≥ N₁ 時 |aₙ − A| 小於 ε/2。同理存在 N₂ 使得 n ≥ N₂ 時 |bₙ − B| 小於 ε/2。取 N = max(N₁, N₂)。對 n ≥ N，由三角不等式：
+量詞順序是「$\forall \varepsilon,\ \exists N,\ \forall n$」：$N$ 可以依賴 $\varepsilon$，但不能依賴 $n$。
 
-|(aₙ + bₙ) − (A + B)| ≤ |aₙ − A| + |bₙ − B|，右邊小於 ε/2 + ε/2 = ε。
-
-證畢。這個證明的關鍵有三：取 ε/2、取 N 為兩者的最大值、三角不等式。
-
-## mathlib 怎麼表達極限
-
-在 mathlib 中，實數序列是一個函數 `a : ℕ → ℝ`。「a 收斂到 A」寫成：
+在 Lean 中，數列就是一個函數 `u : ℕ → ℝ`，第 n 項寫成 `u n`。這個定義照字面翻成：
 
 ```lean
-Filter.Tendsto a Filter.atTop (nhds A)
+∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - a| < ε
 ```
 
-開啟對應的命名空間後，通常簡寫成 `Tendsto a atTop (𝓝 A)`。讀法是：「當 n 趨向無窮大時（`atTop`），a n 趨向 A 的鄰域（`𝓝 A`）。」
+符號和課本一一對應，連量詞順序都一樣。這一頁先完全用這個寫法證明，最後才介紹 mathlib 自己的寫法。
 
-為什麼不直接用 ε-N？因為 mathlib 用 **filter** 這個抽象概念統一處理各種極限：序列極限、函數在一點的極限、單側極限、無窮遠處的極限……都是同一個 `Tendsto` 的不同 filter。這讓同一條引理（例如「和的極限是極限的和」）能一次涵蓋所有情況。
+## 和的極限：課本的 ε/2 證明
 
-代價是：初學時這個寫法比較陌生。好消息是，mathlib 提供了把 `Tendsto` 轉換回 ε-N 形式的引理。在度量空間中（`ℝ` 是其中之一），它大致說：
+**定理**：若 $a_n \to A$ 且 $b_n \to B$，則 $a_n + b_n \to A + B$。
+
+**證明**：給定 $\varepsilon > 0$。由 $a_n \to A$，對 $\varepsilon/2$ 存在 $N_1$，使得 $n \ge N_1$ 時 $|a_n - A| < \varepsilon/2$。同理存在 $N_2$，使得 $n \ge N_2$ 時 $|b_n - B| < \varepsilon/2$。取 $N = \max(N_1, N_2)$。對 $n \ge N$，由三角不等式，
+
+$$
+|(a_n + b_n) - (A + B)| \le |a_n - A| + |b_n - B| < \frac{\varepsilon}{2} + \frac{\varepsilon}{2} = \varepsilon.
+$$
+
+證畢。關鍵有三：取 ε/2、取兩個 N 的最大值、三角不等式。下圖是「取最大值」的直覺：
+
+<EpsN />
+
+## 紙上證明 ↔ Lean
+
+課程檔案的 `limits-add-eps` 把假設與結論都寫成 ε-N 形式，證明照課本走：
+
+<PaperVsLean file="Course/Limits.lean" region="limits-add-eps" rows={["2-5", "6", "7", "8", "9", "10", "11-12", "13", "14", "15-16"]}>
+  <Fragment slot="p1">**定理**：若 $u_n \to a$、$v_n \to b$（都用 ε-N 定義），則 $u_n + v_n \to a + b$。</Fragment>
+  <Fragment slot="p2">給定 $\varepsilon > 0$。</Fragment>
+  <Fragment slot="p3">由 $u_n \to a$，對 $\varepsilon/2$ 取出 $N_1$。（`by linarith` 負責說明 $\varepsilon/2 > 0$。）</Fragment>
+  <Fragment slot="p4">同理，對 $\varepsilon/2$ 取出 $N_2$。</Fragment>
+  <Fragment slot="p5">取 $N = \max(N_1, N_2)$。</Fragment>
+  <Fragment slot="p6">任取 $n \ge N$。</Fragment>
+  <Fragment slot="p7">因為 $n \ge N_1$ 且 $n \ge N_2$，兩個估計都成立：$|u_n - a| < \varepsilon/2$、$|v_n - b| < \varepsilon/2$。</Fragment>
+  <Fragment slot="p8">把誤差重排成 $(u_n - a) + (v_n - b)$。</Fragment>
+  <Fragment slot="p9">三角不等式。</Fragment>
+  <Fragment slot="p10">$< \varepsilon/2 + \varepsilon/2 = \varepsilon$。證畢。</Fragment>
+</PaperVsLean>
+
+有兩個地方是 Lean 比課本多寫的：
+
+- **第 7 列**：課本直接說「$n \ge N$ 時兩個估計都成立」，省略了 $n \ge \max(N_1, N_2)$ 推得 $n \ge N_1$ 這一步。Lean 要求寫出來，用的是 `le_of_max_le_left` 與 `le_of_max_le_right`。
+- **第 8 列**：課本心算的移項，Lean 用 `ring_nf` 說明。
+
+<Term term="calc" short="把一串「= ≤ <」的連續估計，照紙上的樣子一行一行寫出來。">
+
+`calc` 的每一行寫成 `_ 關係 右邊 := 理由`，底線 `_` 代表上一行的右邊。Lean 會檢查每一行的理由，最後把整串關係接起來。這裡是「$=$、$\le$、$<$、$=$」，接起來得到「$<$」。紙上的連續不等式幾乎都可以直接寫成 `calc`。
+
+</Term>
+
+三角不等式在這個 mathlib 版本中叫 `abs_add_le`：`|a + b| ≤ |a| + |b|`。引理名稱在不同版本間有過調整，舊資料可能寫成別的名字。用之前請 `#check abs_add_le` 確認；忘記名字時用 `exact?` 找。
+
+## 課本定義與 mathlib 的 `Tendsto`
+
+mathlib 不用 ε-N 來寫極限，而是寫成 `Tendsto u atTop (𝓝 a)`。白話讀法是「當 n 趨向無窮大時，u n 趨向 a」。看起來陌生，但它和課本定義**等價**，這件事 Lean 可以直接證明：
+
+<LeanCode file="Course/Limits.lean" region="limits-eps-bridge" />
+
+`Metric.tendsto_atTop` 把 `Tendsto` 展開成「$\forall \varepsilon > 0, \exists N, \forall n \ge N$, 距離小於 $\varepsilon$」；`Real.dist_eq` 再說明實數的距離就是 $|x - y|$。所以：
+
+- 拿到一個 `Tendsto` 的假設，可以先用這個等價改寫成 ε-N，再照課本證。
+- 上面的 `limits-add-eps` 配上這個等價，就得到 `Tendsto` 版本的和的極限。
+
+<details>
+<summary>補充：filter、𝓝 與 atTop 是什麼？為什麼 mathlib 要這樣寫</summary>
+
+`Tendsto` 的完整寫法是 `Filter.Tendsto u Filter.atTop (nhds a)`，`𝓝 a` 是 `nhds a` 的記號。
+
+- `atTop` 描述「n 夠大」：所有「從某個 N 開始的尾段」所形成的 filter。
+- `𝓝 a` 描述「夠靠近 a」：a 的所有鄰域所形成的 filter。
+- `Tendsto u atTop (𝓝 a)` 說：對 a 的每個鄰域，u 的某個尾段都落在裡面。在度量空間中，鄰域可以取成半徑 ε 的球，這就回到 ε-N 定義。
+
+**filter** 是用來統一各種極限的抽象概念。數列極限、函數在一點的極限、單側極限、趨向無窮的極限，都是同一個 `Tendsto` 搭配不同的 filter。好處是「和的極限是極限的和」這類引理只要證一次，就能用在所有情況。代價是初學時讀起來不像課本。
+
+`Metric.tendsto_atTop` 的確切形式是：
 
 ```text
 Tendsto u atTop (𝓝 a) ↔ ∀ ε > 0, ∃ N, ∀ n ≥ N, dist (u n) a < ε
 ```
 
-而在 `ℝ` 上，`dist x y` 就是 `|x - y|`。請用 `#check Metric.tendsto_atTop` 查看它在你的 mathlib 版本中的確切形式。
+可以用 `#check Metric.tendsto_atTop` 在你的 mathlib 版本中確認。
 
-## 參考證明
+</details>
 
-`limits-add` 區段是課程的參考實作：
+## mathlib 已有：一行的版本
+
+因為 mathlib 把「和的極限」寫成一般的引理 `Filter.Tendsto.add`，`Tendsto` 版本的定理只要一行：
 
 <LeanCode file="Course/Limits.lean" region="limits-add" />
 
-閱讀時請先回答：
+`hu.add hv` 的意思是「把 `Tendsto.add` 套用到 `hu` 與 `hv`」。對照時請確認：
 
-1. 陳述中的序列型別是什麼？是否為 `ℕ → ℝ`？（參考實作中序列叫 `u`、`v`，極限叫 `a`、`b`，對應上文的 aₙ、bₙ 與 A、B。）
-2. 結論中的極限值是否是 `a + b`，而不是其他東西？結論中的序列 `fun n => u n + v n` 是否就是逐項相加？
-3. 證明是直接引用 mathlib 中「和的極限」的引理，還是從 ε-N 定義出發？
+- 序列型別是 `ℕ → ℝ`，對應課本的實數數列。
+- 結論的極限是 `a + b`，結論中的序列 `fun n => u n + v n` 就是逐項相加。
 
-參考證明只有一行 `hu.add hv`，也就是套用 mathlib 的 `Filter.Tendsto.add`。你可能會覺得「什麼都沒學到」。這正是下面練習的用意：自己從定義出發，寫一次 ε/2 論證。練習請寫在自己新增的檔案中（例如 `Exercises/LimitsPractice.lean`，第一行可以照抄參考實作的 import），並用 `lake env lean` 檢查。
-
-## 從定義出發：證明的骨架
-
-用 ε-N 形式時，Lean 中的證明骨架對應到上面的數學證明：
-
-1. 把三個 `Tendsto` 都轉成 ε-N 形式（用 `rw` 或 `Metric.tendsto_atTop` 的 `.mp`、`.mpr`）。
-2. `intro ε hε`：任取 ε > 0。
-3. 對兩個假設分別代入 `ε / 2`，用 `obtain` 取出 N₁ 與 N₂ 及對應的性質。需要先證明 `ε / 2 > 0`，`linarith` 或 `positivity` 可以處理。
-4. `use max N₁ N₂`，接著 `intro n hn`。
-5. 從 `hn : n ≥ max N₁ N₂` 推出 n ≥ N₁ 與 n ≥ N₂（例如把 `le_max_left` 與 `hn` 用 `le_trans` 接起來，或在自然數上直接用 `omega`；引理名稱請以 `#check` 確認）。
-6. 把 `dist` 改寫成絕對值，用三角不等式（mathlib 中有 `abs_add` 一類的引理）與 `linarith` 收尾。
-
-步驟 6 是最需要搜尋的地方。三角不等式在 mathlib 中的名稱在不同版本間有過調整，請用 `exact?` 找，或者讓 `linarith` 搭配你明確提供的不等式。
-
-## 與 AI 協作的建議
-
-這個單元很適合用 [第 7 章](../../chapters/07-lean-tools/) 的受限迴圈，但請注意兩件事：
-
-- 如果你的目標是練習 ε-N 論證，要在 Prompt 中**明確禁止**直接引用「和的極限」的現成引理，否則 agent 很可能一行解決，雖然正確，但不是你要練習的東西。
-- 如果 agent 宣稱某條引理名稱，例如三角不等式的某個版本，請在套用前 `#check`。名稱不存在或假設不符是這類證明中最常見的失敗。
+這一行完全正確，但看不到 ε/2 的論證。兩種寫法各有用途：**要學證明方法**，從定義出發寫一次；**要在更大的證明裡用到這個事實**，直接用 mathlib 的引理。
 
 ## 查核要點
 
-- **索引型別**：序列是 `ℕ → ℝ`。如果寫成 `ℤ → ℝ`，`atTop` 的意義仍然合理，但已經不是課本上的「序列」。
-- **嚴格不等號**：定義中 ε > 0 是嚴格的，|aₙ − A| 小於 ε 也是嚴格的。把 ε > 0 誤寫成 ε ≥ 0 會讓定義不可滿足（取 ε = 0），把結論寫成 ≤ ε 則恰好等價，但最好與課本一致。
-- **量詞順序**：∃ N 必須在 ∀ n 之前。若寫成 ∀ n ∃ N，條件變得幾乎無意義。
-- **公理**：實分析的證明幾乎一定會出現 `Classical.choice` 等標準公理，這是正常的。
+- **量詞順序**：$\exists N$ 必須在 $\forall n$ 之前。例如有人把收斂寫成 `∀ ε > 0, ∀ n, ∃ N, n ≥ N → |a n - A| < ε`。這時 N 可以依賴 n：對任意 n，取 N 大於 n，條件 `n ≥ N` 就是假的，蘊含自動成立。所以這個「定義」對任何數列都成立，沒有任何內容。
+- **嚴格不等號**：定義中 $\varepsilon > 0$ 是嚴格的。誤寫成 $\varepsilon \ge 0$ 會讓定義無法滿足（取 $\varepsilon = 0$）。結論寫成 $\le \varepsilon$ 恰好等價，但最好和課本一致。
+- **索引型別**：數列是 `ℕ → ℝ`。寫成 `ℤ → ℝ` 時 `atTop` 仍有意義，但已經不是課本上的數列。
+- **公理**：實分析的證明幾乎一定會用到 `Classical.choice` 等標準公理，這是正常的。
+
+> **查核提示**：Lean 通過只代表「你寫的陳述」成立。極限的翻譯最容易錯在量詞順序：請逐字確認是「∀ ε，∃ N，∀ n ≥ N」，而且 N 沒有偷偷依賴 n。
+
+## 和 AI 一起學
+
+<AskAI
+  task="請 AI 照課本的 ε-N 步驟證明一個極限性質，並禁止它直接引用 mathlib 現成的極限引理。"
+  prompt={"我在修高等微積分，想練習 ε-N 論證。請用 Lean 4（mathlib）證明：若實數數列 u_n → a，則 u_n − 3 → a − 3。\n要求：\n1. 陳述用 ε-N 形式寫出：∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - a| < ε；不要用 Tendsto。\n2. 不可以使用 Filter.Tendsto 的任何現成引理。\n3. 證明完成後，用中文逐行說明每一步對應課本證明的哪一句，並列出你用到的每個 mathlib 引理名稱。"}
+>
+
+- 陳述的量詞順序是不是「∀ ε，∃ N，∀ n ≥ N」？假設與結論的形式是否一致？
+- AI 列出的每個引理名稱，都用 `#check` 確認存在，而且敘述和它說的一樣。
+- 這題其實不需要 ε/2：$|(u_n - 3) - (a - 3)| = |u_n - a|$。AI 如果硬套 ε/2，證明仍然正確，但請想想為什麼不必要。
+
+</AskAI>
+
+### 真實紀錄：兩個 AI 怎麼翻「和的極限」
+
+我們把上面的課本定理與 ε/2 證明交給兩個 AI，請它們「盡量保留課本證明的步驟」翻成 Lean，最後說明每一步對應課本哪一句。兩者都照課本的 ε/2 結構完成，最終都通過 Lean 編譯，但過程不同。
+
+<AIDialogue tool="Claude Code" model="claude-opus-5-5" date="2026-10-12" result="通過獨立編譯，無錯誤、無警告。" record="limits/claude">
+
+陳述用 mathlib 的 `Tendsto`，證明一開始先改寫成 ε-N：
+
+```lean
+  rw [Metric.tendsto_atTop] at ha hb ⊢
+  simp only [Real.dist_eq] at ha hb ⊢
+  intro ε hε
+  obtain ⟨N₁, hN₁⟩ := ha (ε / 2) (by linarith)
+  obtain ⟨N₂, hN₂⟩ := hb (ε / 2) (by linarith)
+  refine ⟨max N₁ N₂, ?_⟩
+```
+
+最後主動補充：
+
+> mathlib 本來就有這個定理，叫 `Filter.Tendsto.add`，一行 `ha.add hb` 就能證完。這裡刻意不用它，而是照課本的 ε-N 步驟逐句寫出來。
+
+</AIDialogue>
+
+<AIDialogue tool="Codex" model="gpt-6.1-sol（本機設定）" date="2026-10-12" result="最終版本通過獨立編譯，無錯誤、無警告。" record="limits/codex">
+
+第一次編譯失敗：
+
+```text
+Answer.lean:38:39: error(lean.unknownIdentifier): Unknown identifier `abs_add`
+```
+
+接著它在 mathlib 原始碼中搜尋 `theorem abs_add|lemma abs_add`，這次搜尋沒有輸出任何結果。之後它把三角不等式那一行改成 `abs_add_le`，重新編譯通過：
+
+```lean
+    _ ≤ |aSeq n - a| + |bSeq n - b| := abs_add_le _ _
+```
+
+</AIDialogue>
+
+**你該看出什麼？**
+
+- **兩份證明的骨架和本頁的 `limits-add-eps` 幾乎相同。** 都是先把 `Tendsto` 改寫成 ε-N（Claude 用 `rw [Metric.tendsto_atTop]`，Codex 用 `Metric.tendsto_atTop.mpr`／`.mp`），再照課本取 ε/2 與 `max N₁ N₂`。這正是上面那個等價在實際證明中的用法。
+- **引理名稱是 AI 最容易錯的地方，而 Lean 會直接抓到。** Codex 先寫了 `abs_add`，這個名稱在本專案的 mathlib 版本不存在，Lean 立刻報錯。這是好的失敗：錯誤很明確，不會悄悄通過。但要注意，紀錄中那次搜尋沒有結果，紀錄也沒有顯示它從哪裡得知 `abs_add_le` 這個名稱。最終的編譯通過，代表這個名稱存在、型別也對得上；你自己用 `#check abs_add_le` 看它的敘述，才算真正確認。
+- **AI 主動提到現成引理，是有用的資訊。** Claude 說明 mathlib 已有 `Filter.Tendsto.add`，並說明自己為什麼不用。若你的目的是練習 ε-N，就要像上面的 prompt 一樣明確禁止；若只是要用這個事實，一行就夠了。
 
 ## 練習
 
-### 練習 A1.1　常數倍
+### 練習 A1.1　翻譯並證明：常數倍
 
-證明：若 aₙ → A，則對任意實數 c，c · aₙ → c · A。先寫數學證明，再用 mathlib 找到對應的現成引理。
+把「若 $a_n \to A$，則對任意實數 $c$，$c \cdot a_n \to c \cdot A$」翻譯成 ε-N 形式的 Lean 陳述並證明。先寫出陳述，檢查量詞順序與假設，再動手。
+
+```lean
+import Mathlib
+
+example (u : ℕ → ℝ) (a c : ℝ) : sorry := by
+  sorry
+```
 
 <details>
-<summary>提示</summary>
+<summary>提示一：陳述與紙上證明</summary>
 
-數學上，c = 0 時要另外處理，否則取 ε / |c|。在 mathlib 中，`Tendsto` 相關引理常以運算命名，例如 `Tendsto.add`、`Tendsto.mul`；常數乘法的版本可以用 `exact?` 找。
+假設與結論都寫成 `∀ ε > 0, ∃ N, ∀ n ≥ N, |… - …| < ε`。紙上證明的關鍵是 $|c u_n - c a| = |c| \cdot |u_n - a|$。課本常取 $\varepsilon / |c|$，但 $c = 0$ 時要另外處理。有一個避開分情況的技巧：改取 $\varepsilon / (|c| + 1)$，因為 $|c| + 1 > 0$ 永遠成立。
 
 </details>
 
 <details>
-<summary>解答方向</summary>
+<summary>提示二：Lean 中的步驟</summary>
 
-mathlib 中有 `Filter.Tendsto.const_mul` 一類的引理（請 `#check` 確認參數順序）。若從定義出發，要分 c = 0 與 c ≠ 0 兩種情況，後者取 ε / |c|，並用 |c · x| = |c| · |x|。
-
-</details>
-
-### 練習 A1.2　從定義重證和的極限
-
-不使用 `Tendsto.add` 或任何「和的極限」引理，從 ε-N 定義出發，證明本單元的定理。
-
-<details>
-<summary>提示</summary>
-
-照「從定義出發：證明的骨架」六步走。卡在三角不等式時，先寫出你需要的不等式，例如 `|a n + b n - (A + B)| ≤ |a n - A| + |b n - B|`，用 `have` 單獨證明它，再交給 `linarith`。
+結構和本頁的 `limits-add-eps` 相同，只是只有一個 N。`|c * u n - c * a|` 可以用 `rw [← mul_sub, abs_mul]` 改寫成 `|c| * |u n - a|`。估計的部分用 `calc`：先 $\le |c| \cdot \frac{\varepsilon}{|c| + 1}$，再 $< (|c| + 1) \cdot \frac{\varepsilon}{|c| + 1}$，最後 $= \varepsilon$。各行可以試試 `gcongr`、`field_simp`；正數條件用 `positivity`。
 
 </details>
-
-<details>
-<summary>解答方向</summary>
-
-`have` 的那一步可以先把左邊改寫成 `|(a n - A) + (b n - B)|`（用 `ring_nf` 或 `congr 1` 加 `ring`），再套用三角不等式。最後 `linarith` 結合 `|a n - A|` 小於 ε/2、`|b n - B|` 小於 ε/2 與該不等式即可。
-
-</details>
-
-### 練習 A1.3　翻譯查核
-
-有人把「aₙ 收斂到 A」寫成 `∀ ε > 0, ∀ n, ∃ N, n ≥ N → |a n - A| < ε`。這個翻譯有什麼問題？
 
 <details>
 <summary>解答</summary>
 
-量詞順序錯了：∃ N 跑到 ∀ n 之後，N 可以依賴 n。對任意 n，只要取 N 大於 n，條件 `n ≥ N` 就為假，蘊含自動成立。所以這個「定義」對任何序列都成立，毫無內容。
+```lean
+import Mathlib
+
+example (u : ℕ → ℝ) (a c : ℝ) (hu : ∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - a| < ε) :
+    ∀ ε > 0, ∃ N, ∀ n ≥ N, |c * u n - c * a| < ε := by
+  intro ε hε
+  have hc : 0 < |c| + 1 := by positivity
+  obtain ⟨N, hN⟩ := hu (ε / (|c| + 1)) (by positivity)
+  refine ⟨N, ?_⟩
+  intro n hn
+  have h := hN n hn
+  calc |c * u n - c * a| = |c| * |u n - a| := by rw [← mul_sub, abs_mul]
+    _ ≤ |c| * (ε / (|c| + 1)) := by gcongr
+    _ < (|c| + 1) * (ε / (|c| + 1)) := by gcongr; linarith
+    _ = ε := by field_simp
+```
+
+`gcongr` 的意思是「兩邊長得一樣，只比較不同的那一個因子」：
+
+- 第二行：兩邊都是 $|c| \cdot (\ldots)$，`gcongr` 只比較括號內的因子，要用到 $|u_n - a| < \varepsilon / (|c| + 1)$（即 `h`）。因為 $|c|$ 可能是 0，乘上去之後只能保證 `≤`，不能保證 `<`。
+- 第三行：兩邊都是 $(\ldots) \cdot \frac{\varepsilon}{|c| + 1}$，`gcongr` 只比較前面的因子，留下子目標 $|c| < |c| + 1$，由 `linarith` 解決。這次乘上的 $\frac{\varepsilon}{|c|+1}$ 一定是正的，所以嚴格不等式 `<` 能保留下來。
+
+若改用 mathlib 的 `Tendsto` 寫法，這個定理也是一行：`Filter.Tendsto.const_mul`。
+
+```lean
+example (u : ℕ → ℝ) (a c : ℝ) (hu : Filter.Tendsto u Filter.atTop (nhds a)) :
+    Filter.Tendsto (fun n => c * u n) Filter.atTop (nhds (c * a)) :=
+  hu.const_mul c
+```
 
 </details>
+
+## 本單元小結
+
+- 課本的 ε-N 定義在 Lean 中照字面寫成 `∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - a| < ε`，量詞順序完全一樣。
+- 「和的極限」的 ε/2 證明，在 Lean 中是 `intro ε`、兩次 `obtain` 取出 N₁ 與 N₂、`max N₁ N₂`、再用 `calc` 寫三角不等式。
+- mathlib 用 `Tendsto u atTop (𝓝 a)` 寫極限，它和 ε-N 定義等價（`limits-eps-bridge`）；mathlib 已有的 `Tendsto.add` 讓整個定理只要一行。
+- 查核極限陳述時，先看量詞順序，再看嚴格不等號與索引型別。AI 給的引理名稱，用 `#check` 確認。
 
 ## 延伸閱讀
 
 - [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 中關於序列與極限的小節，以及「Topology」一章對 filter 的介紹。
+- 與大學課程的對照，可看本站的 [大學數學 × Lean 對照](../../guides/university-map/)。
 - 另一個進階單元：[投影矩陣](../02-projection/)。

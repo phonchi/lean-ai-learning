@@ -1,30 +1,57 @@
 ---
 title: 第 6 章　和 AI agent 協作：Claude Code 與 Codex
-description: 用同一個 Lean 練習，分別在 Claude Code 與 Codex CLI 中進行受控的協作；包含登入方式、啟動位置、Prompt 範本，以及沒有帳號時的人工替代流程。
+description: 用同一個 Lean 練習，分別在 Claude Code 與 Codex CLI 中進行受控的協作；包含登入方式、啟動位置、Prompt 範本、查核流程，以及沒有帳號時的人工替代流程。
 sidebar:
   order: 6
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import Term from '../../../components/Term.astro';
+import AskAI from '../../../components/AskAI.astro';
+import AgentLoop from '../../../components/figures/AgentLoop.astro';
+
+<UniCourse courses="任何需要交證明作業的課 · 數學證明導論">
+
+這一章沒有新的數學，教的是一個工作習慣：把 AI 當成**幫你跑腿的助手**，而不是代寫作業的人。在大學作業裡最實用的用法有兩種：一是先自己寫好紙上證明，再請 agent 把它形式化，看 Lean 是否同意每一步；二是請 agent 檢查你已經寫好的 Lean 證明，但要求它只指出問題、不要改題。不管哪一種，紙上證明都要先由你寫出來。
+
+</UniCourse>
 
 ## 本章目標
 
-1. 分清楚「聊天機器人」與「coding agent」的差別：後者能讀寫你的檔案、執行指令。
-2. 在解壓後的課程專案根目錄中，啟動 Claude Code 或 Codex CLI，並用既有訂閱登入，不設定任何 API key。
-3. 用一份固定的 Prompt 範本，讓 agent 修復一個帶 `sorry` 的練習，同時明確禁止它修改陳述。
-4. 讀懂 agent 的修改，決定接受或拒絕。
+1. 分清楚聊天機器人與 coding agent 的差別，並在課程專案根目錄用既有訂閱啟動 Claude Code 或 Codex。
+2. 用一份固定的 Prompt 範本委託 agent，明確禁止它修改陳述。
+3. 依固定的四步檢查 agent 的成果，自己決定接受或拒絕。
 
 ## 從聊天到 agent
 
-前幾章，AI 的角色是「會說話的參考書」：你複製 proof state 過去，它回答解釋。**Coding agent** 多了兩種能力：它能直接讀寫專案中的檔案，也能執行指令（例如 `lake build`）並讀取輸出。
+前幾章，AI 的角色是「會說話的參考書」：你把 proof state 貼過去，它回答解釋。coding agent 多做兩件事：它會直接改你的檔案，也會自己執行指令並讀輸出。
 
-這讓它在 Lean 上非常有用：它可以改一行、編譯、看錯誤、再改。但也帶來新的風險：
+<Term term="coding agent" short="能直接讀寫專案檔案、執行指令的 AI 工具，例如 Claude Code 與 Codex CLI。">
+
+聊天型 AI 只看得到你貼給它的文字，也只能回你文字。coding agent 在你的電腦上執行，能打開專案中的檔案、修改它們，並執行像 `lake env lean` 這樣的指令、讀取輸出，再決定下一步。所以它可以自己跑「改一行 → 編譯 → 看錯誤 → 再改」的迴圈。能力越大，越需要你事先劃好它可以動的範圍。
+
+</Term>
+
+這讓它在 Lean 上很有用：它可以改一行、編譯、看錯誤、再改。但也帶來新的風險：
 
 - 它可能修改你沒要求它改的地方，例如**定理的陳述**。
 - 它可能為了讓編譯通過而加上一個假設、換一個定義，甚至宣告一條 `axiom`。
 - 它可能回報「已完成」，但檔案裡還有 `sorry`。
 
-所以本章的重點不是「怎麼讓 agent 寫出證明」，而是**怎麼把 agent 的工作框在你能檢查的範圍內**。
+所以本章的重點不是「怎麼讓 agent 寫出證明」，而是**怎麼把 agent 的工作框在你能檢查的範圍內**。下面這張圖是整章的骨架：
+
+<AgentLoop />
+
+### agent 實際會怎麼出錯
+
+本站為了教材，把同樣的課本題目各交給 Claude Code 與 Codex 跑過一次（紀錄說明見 `verification/ai-dialogues/README.md`）。6 份最終答案都通過獨立編譯，但仍然看得到上面說的風險，只是方式比較細微：
+
+- **把警告藏起來**：在歸納題中，Codex 第一次編譯時，Lean 警告假設 `hn` 沒被用到；它把名稱改成 `_hn` 讓警告消失，之後說和課本「數學意義完全一致」。沒被用到的假設本身就值得追問，詳見 [第 4 章](../04-induction-and-sums/)。
+- **文字宣稱沒有被 Lean 檢查**：在量詞題中，Claude 證明了兩個定理，並說兩者「等價」，但並沒有在 Lean 中證明這件事，詳見 [第 3 章](../03-logic-and-quantifiers/)。
+- **用錯名稱，再自己修正**：在極限題中，Codex 第一次編譯失敗，原因是這個版本的 mathlib 沒有 `abs_add`（名稱是 `abs_add_le`），它接著執行的搜尋沒有結果，之後才改用正確名稱並編譯通過（紀錄看不出名稱從哪來），詳見 [進階：實數序列和的極限](../../advanced/01-limits/)。
+
+這三例都通過編譯。換句話說，「編譯通過」只回答了圖中的③；④還是要你自己做。
 
 ## 兩個工具、同一個案例
 
@@ -39,7 +66,13 @@ import LeanCode from '../../../components/LeanCode.astro';
 - 已依照 [環境設定](../../guides/setup/) 完成安裝，並在 VS Code 中確認專案可以正常載入（`Course/First.lean` 沒有紅色錯誤）。
 - 已在專案根目錄成功執行過一次 `lake build`。注意：`lake build` 只建置課程的參考範例（`Course/`），**不會**檢查 `Exercises/` 中的練習檔。檢查練習檔要用 `lake env lean Exercises/檔名.lean`，見下文。
 - **所有指令都在解壓後的 Lean 專案根目錄執行**，也就是含有 `lean-toolchain` 與 `lakefile` 的那一層。在其他目錄啟動 agent，它會找不到專案。
-- Windows 使用者：VS Code 可以用原生 Windows 版；Claude Code、Codex CLI 與下一章的 MCP 建議在 WSL 中執行，且專案需位於 WSL 可以存取並能完成 `lake build` 的位置。請不要在同一個專案中混用 Windows 與 WSL 的 Lean 安裝來建置。
+
+<details>
+<summary>補充：Windows 使用者</summary>
+
+VS Code 可以用原生 Windows 版；Claude Code、Codex CLI 與下一章的 MCP 建議在 WSL 中執行，且專案需位於 WSL 可以存取並能完成 `lake build` 的位置。請不要在同一個專案中混用 Windows 與 WSL 的 Lean 安裝來建置。
+
+</details>
 
 ### 登入：使用既有訂閱，不使用 API key
 
@@ -75,7 +108,7 @@ codex
 
 工具是否逐次詢問，取決於目前的信任、sandbox 與 approval 設定，不能只靠「保持預設」保證。第一次練習時，可以在下方 Prompt 末尾加上：「先只提供一個建議步驟，不要改檔；等我回報 Lean 訊息再繼續。」由你理解後自行貼入工作副本。熟悉流程後，再讓 agent 直接修改指定 proof body；成果仍要依下一節查核。
 
-## Prompt 範本
+## 第①步：Prompt 範本
 
 把下面這段文字貼給 agent（兩個工具通用）。之後換成其他練習檔時，只要替換檔名與定理名稱。
 
@@ -106,7 +139,13 @@ codex
 - 第 5 條給它一條合法的退路。如果你不給，agent 遇到不可證的陳述時，最容易做的事就是偷偷改它。
 - 要求貼出實際輸出，是因為「我已確認編譯通過」這句話本身無法驗證。
 
-## 檢查 agent 的成果
+### 示範：拿掉限制會怎樣
+
+想體會第 1、2 條的作用，可以做一個對照實驗。先把完成的 `Exercises/ProofRepair.lean` 另存到專案外的筆記資料夾（例如 `ProofRepair.done.lean`），再從原始下載的壓縮檔重新取出這個檔案，讓它回到帶 `sorry` 的狀態；不要直接覆蓋而沒有保留你的成果。接著把 Prompt 中的第 1、2 條刪掉，請 agent 處理同一個定理，觀察它是否修改了陳述或加入假設。
+
+對 `imp_trans` 這種簡單題，agent 多半不需要改陳述就能完成，所以你不一定會看到改題行為；要看得到，得換成 [實戰 1](../../labs/01-proof-repair/) 任務 B 那種刻意「缺前提」的題目。不論結果如何，結束後都要還原檔案。這個實驗要記住的一句話是：**一個沒有被要求保留陳述的 agent，沒有理由保留它**。
+
+## 第④步：檢查 agent 的成果
 
 agent 回報完成後，不要直接相信。請依序自己做：
 
@@ -116,6 +155,19 @@ agent 回報完成後，不要直接相信。請依序自己做：
 4. **讀懂證明**。逐行放游標看 proof state，並對照 agent 給的數學理由。如果某一步你看不懂，請它解釋**那一步**，而不是請它重寫。
 
 如果任一步失敗，先不要套用候選修改；若已寫入檔案，保留差異後回到先前的工作副本修正。是否出現確認視窗，不能取代你對實際修改的查核。
+
+> **查核提示**：agent 說「已完成、編譯通過」只是一句話。你自己跑出的 `lake env lean` 輸出、`git diff` 與 `#print axioms` 才是證據。
+
+## 在大學作業中怎麼用
+
+把上面的流程搬到你自己的證明作業，順序是固定的：
+
+1. **先寫紙上證明**。把課本習題的證明寫在紙上或筆記裡，包括你用了哪些定義與定理。這一步不交給 AI。
+2. **自己寫 Lean 陳述，或請 agent 寫但由你檢查**。用 [第 3 章](../03-logic-and-quantifiers/) 的方法檢查量詞順序與假設，用 [第 8 章](../08-project-audit/) 的「原題」清單逐項對照。陳述定案後，才開始證明。
+3. **委託證明時套用 Prompt 範本**。把檔名、定理名換掉；可以把你的紙上證明一起貼給 agent，要求它「依照這份紙上證明的步驟」形式化。
+4. **用第④步驗收**，並比對 agent 的步驟和你的紙上證明是否一致。若 agent 走了完全不同的路，就請它解釋，或自己對照理解；不要只因為 Lean 通過就把它當成你的證明交出去。
+
+如果課程規定作業不可使用 AI，請遵守課程規定。這時你仍然可以在**繳交後**用這個流程檢查自己的理解。
 
 ## 沒有 agent 帳號時
 
@@ -128,11 +180,26 @@ agent 回報完成後，不要直接相信。請依序自己做：
 
 你也可以把第 3 步的內容貼給任何聊天型 AI，套用同一份 Prompt 範本中的限制，只是由你自己動手改檔案。下一章介紹的 MCP 工具，本質上就是讓 agent 自動完成第 1 與第 3 步。
 
+建議至少手動做一次。例如自己完成下一個練習檔 `Exercises/OddSum.lean`（前 n 個奇數和，需要 [第 4 章](../04-induction-and-sums/) 的歸納法），寫下每一輪的 proof state 與錯誤訊息，最後用 `lake env lean Exercises/OddSum.lean` 檢查。再把這份紀錄和委託 agent 的紀錄放在一起比較：哪一份讓你更理解證明？哪一份花的時間比較少？兩個答案通常不一樣，而知道何時該用哪一種，就是協作的判斷力。
+
+## 和 AI 一起學
+
+<AskAI
+  task="請 agent 檢查你自己寫的證明，但只指出問題、不替你改。"
+  prompt={"我在修一門需要交證明作業的課。下面是我的紙上證明，以及我照著它寫的 Lean 4 證明（檔案：Exercises/ProofRepair.lean，定理 imp_trans）。\n請不要修改任何檔案，只做以下三件事：\n1. 在專案根目錄執行 lake env lean Exercises/ProofRepair.lean，貼出完整輸出與 exit code；\n2. 逐行指出我的 Lean 證明對應紙上證明的哪一句，若有對不上的地方請說明；\n3. 如果有錯，只說明是哪一行、錯在哪裡，不要給我修好的程式碼。\n\n紙上證明：（貼上）"}
+>
+
+- agent 是否真的**沒有改檔**？用 `git diff` 或在 VS Code 中比對確認。
+- 它貼出的是指令的實際輸出，還是只寫「通過」？自己再跑一次，看兩者是否一致。
+- 它說「第 2 行對應紙上的某句」時，你同意嗎？把游標放在那一行看 proof state，自己判斷。
+
+</AskAI>
+
 ## 練習
 
 ### 練習 6.1　第一次委託
 
-用上面的 Prompt 範本，請 agent 完成 `Exercises/ProofRepair.lean` 中的 `sorry`。完成後，依「檢查 agent 的成果」四步檢查，並寫下：agent 用了幾輪？你是否接受它的修改？理由是什麼？
+用本章的 Prompt 範本，請 agent 完成 `Exercises/ProofRepair.lean` 中的 `sorry`。完成後依「第④步」的四步檢查，並寫下：agent 用了幾輪？你是否接受它的修改？理由是什麼？
 
 <details>
 <summary>提示</summary>
@@ -148,36 +215,14 @@ agent 回報完成後，不要直接相信。請依序自己做：
 
 </details>
 
-### 練習 6.2　故意設下陷阱
+## 本章小結
 
-先把練習 6.1 完成的 `Exercises/ProofRepair.lean` 另存一份（例如複製成 `ProofRepair.done.lean` 放在專案外的筆記資料夾），再從原始下載的壓縮檔重新取出這個檔案，讓它回到帶 `sorry` 的狀態。不要直接覆蓋而沒有保留你的成果。接著把 Prompt 中的第 1、2 條刪掉，再請 agent 處理同一個定理，觀察它是否修改了陳述或加入假設。
-
-<details>
-<summary>提示</summary>
-
-對簡單的題目，agent 可能根本不需要改陳述就能完成，所以你不一定會看到改題行為。可以試試下一章或實戰 1 中刻意設計成「缺前提」的題目。
-
-</details>
-
-<details>
-<summary>討論</summary>
-
-這個練習的目的是體會「限制條件」的作用。無論結果如何，結束後都請還原檔案。重點是：**一個沒有被要求保留陳述的 agent，沒有理由保留它**。
-
-</details>
-
-### 練習 6.3　手動版本
-
-不使用 agent，自己打開下一個練習檔 `Exercises/OddSum.lean`（前 n 個奇數和，需要 [第 4 章](../04-induction-and-sums/) 的歸納法），完成其中的 `sorry`，並寫下每一輪的 proof state 與錯誤訊息。最後用 `lake env lean Exercises/OddSum.lean` 檢查。
-
-<details>
-<summary>參考做法</summary>
-
-比較這份紀錄與練習 6.1 的紀錄：哪一份讓你更理解證明？哪一份花的時間比較少？這兩個答案通常不一樣，而知道何時該用哪一種，就是協作的判斷力。
-
-</details>
+- coding agent 會改檔、會執行指令，所以要先用 Prompt 劃好範圍：不改陳述、不加假設、最多 3 輪、不可證就停。
+- 協作迴圈中，agent 只負責「修改與編譯」；寫規格與判讀結果是你的工作。
+- 「編譯通過」不等於「證明了原題」。真實紀錄中，通過編譯的答案仍有被藏起來的警告與沒被檢查的文字宣稱。
 
 ## 延伸閱讀
 
 - [實戰 1：命題邏輯證明修復](../../labs/01-proof-repair/) 用的就是本章的案例檔。
+- 與大學課程的對照，可看本站的 [大學數學 × Lean 對照](../../guides/university-map/)。
 - 下一章：[本機 Lean 工具與受限迴圈](../07-lean-tools/)，讓 agent 直接讀取 proof state 與 diagnostics。

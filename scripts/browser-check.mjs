@@ -24,7 +24,7 @@ try {
  for (const dir of ['chapters', 'labs', 'advanced', 'guides']) {
   for (const file of (await readdir('src/content/docs/' + dir)).filter(n => /\.mdx?$/.test(n)).sort()) routes.push('/' + dir + '/' + file.replace(/\.mdx?$/, '') + '/');
  }
- check('完整教材頁數', routes.length === 16, String(routes.length));
+ check('完整教材頁數', routes.length === 17, String(routes.length));
  const links = new Set();
  for (const route of routes) {
   await visit(route);

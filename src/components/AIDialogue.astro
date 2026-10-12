@@ -1,0 +1,12 @@
+---
+// 真實 AI 對話紀錄的摘錄。完整 prompt、輸出與編譯紀錄在 repo 的 verification/ai-dialogues/。
+interface Props { tool: string; model: string; date: string; result: string; record: string; }
+const { tool, model, date, result, record } = Astro.props;
+const href = `https://github.com/phonchi/lean-ai-learning/tree/main/verification/ai-dialogues/${record}`;
+---
+<section class="ai-dialogue" aria-label={`${tool} 真實對話紀錄`}>
+  <p class="ai-dialogue-meta"><strong>真實紀錄</strong><span>{tool}</span><span>{model}</span><span>{date}</span></p>
+  <div class="ai-dialogue-body"><slot /></div>
+  <p class="ai-dialogue-result"><span>Lean 驗證</span>{result}</p>
+  <p class="ai-dialogue-source"><a href={href}>完整紀錄（prompt、原始輸出、獨立編譯 log）</a></p>
+</section>

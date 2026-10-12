@@ -17,7 +17,7 @@ export default defineConfig({
     customCss: ['./src/styles/course.css'],
     components: { Hero: './src/components/Hero.astro' },
     sidebar: [
-      { label: '學習起點', items: [{ label: '課程首頁', slug: '' }, { label: '準備實作環境', slug: 'guides/setup' }] },
+      { label: '學習起點', items: [{ label: '課程首頁', slug: '' }, { label: '準備實作環境', slug: 'guides/setup' }, { label: '大學數學 × Lean 對照', slug: 'guides/university-map' }] },
       { label: '八章主線', items: [{ autogenerate: { directory: 'chapters' } }] },
       { label: '三個完整實戰', items: [{ autogenerate: { directory: 'labs' } }] },
       { label: '進階範例', items: [{ autogenerate: { directory: 'advanced' } }] },

@@ -6,6 +6,14 @@ sidebar:
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import AskAI from '../../../components/AskAI.astro';
+
+<UniCourse courses="線性代數 · 高等微積分">
+
+「平方和為零，則每一項都是零」在大學數學裡反覆出現：線性代數中 $\lVert v \rVert^2 = v_1^2 + \cdots + v_n^2 = 0$ 推出 $v = 0$，是內積「正定」的核心；高等微積分與實分析中，非負項相加為零推出每項為零，是許多唯一性證明的關鍵一步。這次把這個論證用列表形式化。
+
+</UniCourse>
 
 ## 這次實戰的定位
 
@@ -38,11 +46,13 @@ import LeanCode from '../../../components/LeanCode.astro';
 
 <LeanCode file="Course/Squares.lean" region="squares-nonneg" />
 
-這一段是**閱讀題**，請回答：
+先逐行讀懂它：
 
-1. `squareSum` 的定義是否忠實於「每個元素的平方之和」？空列表時它等於多少？
-2. 命題一的證明對列表做歸納。`cons` 情況中，`change` 那一行把目標改寫成什麼？為什麼這樣改寫是合法的（提示：`map` 與 `sum` 在 `x :: xs` 上展開的結果）？
-3. `add_nonneg (sq_nonneg x) ih` 對應數學上的哪一句話？
+- **定義**：`squareSum xs` 先把列表每個元素平方（`List.map`），再全部加起來（`List.sum`），正是「每個元素的平方之和」。空列表平方後還是空列表，空列表的和是 0，所以 `squareSum [] = 0`，和數學上「空和為 0」的約定一致。
+- **基底**：`nil` 情況的目標是 `0 ≤ squareSum []`，`simp [squareSum]` 展開定義後就是 `0 ≤ 0`。
+- **歸納步驟**：`add_nonneg (sq_nonneg x) ih` 對應的數學句子是「$x^2 \ge 0$，而由歸納假設其餘各項的平方和也 $\ge 0$，兩個非負數相加仍非負」。
+
+只留一題給你想：`cons` 情況中，`change` 那一行把目標改寫成什麼？為什麼這樣改寫是合法的？（提示：想想 `map` 與 `sum` 在 `x :: xs` 上依定義展開的結果。`change` 只接受和原目標「依定義相同」的改寫，否則 Lean 會報錯。）
 
 ## 練習檔
 
@@ -73,6 +83,17 @@ import LeanCode from '../../../components/LeanCode.astro';
 - `[0, 2]`：平方和 4，兩邊皆假。
 
 這些都只是檢查，不是證明。
+
+<AskAI
+  task="自己做完邊界情況後，請 AI 也做一次，比對兩邊的結果。"
+  prompt={"下面是一個 Lean 4 + mathlib 的陳述，先不要證明，也不要修改它。\ntheorem squares_zero (xs : List ℝ) : Course.squareSum xs = 0 ↔ ∀ x ∈ xs, x = 0\n其中 Course.squareSum xs 是把 xs 每個元素平方後的總和。\n請用中文回答：\n1. 空列表時，左右兩邊各是什麼？命題是否成立？\n2. 列表 [1, -1] 與 [0, 0, 0] 時，左右兩邊各是真還是假？\n3. 如果把 List ℝ 換成 Finset ℝ，陳述的意思會改變嗎？請舉例。"}
+>
+
+- 空列表的右邊是「空虛地為真」。AI 有沒有說清楚這一點？還是它說「空列表要另外排除」？後者會讓你想加上 `xs ≠ []` 這種原題沒有的前提。
+- `[1, -1]` 的例子中，AI 有沒有把「和為 0」與「平方和為 0」混在一起？
+- 關於 `Finset`，AI 舉的例子和你上面寫的（重複元素只算一次）一致嗎？
+
+</AskAI>
 
 ## 第二步：設定受限迴圈
 
@@ -162,6 +183,11 @@ theorem my_squares_nonneg (xs : List ℝ) : 0 ≤ Course.squareSum xs := by
 課程的參考證明如下。它在「唯若」方向使用 `nlinarith`，與上面提示的路線略有不同。agent 給出的證明可能與參考完全不同；只要通過查核、你能解釋，而且沒有引用這個參考定理，就是可以接受的。
 
 <LeanCode file="Course/Squares.lean" region="squares-zero" />
+
+讀這段證明時，要先看懂兩件事：
+
+- **`ih` 是一個「若且唯若」**：`squareSum xs = 0 ↔ ∀ y ∈ xs, y = 0`。`ih.mp` 是它的正方向（和為 0 ⇒ 每項為 0），`ih.mpr` 是反方向（每項為 0 ⇒ 和為 0）。「唯若」方向用 `ih.mp`，「若」方向用 `ih.mpr`。
+- **「列表 `x :: xs` 的每一項都是 0」可以拆成兩半**：`x = 0`，而且 `xs` 的每一項都是 0。`simpa only [List.mem_cons, forall_eq_or_imp]` 就是在做這個改寫，接著用 `And.intro hx (ih.mp ht)` 交出這兩半。
 
 </details>
 

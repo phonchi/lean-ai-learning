@@ -1,148 +1,232 @@
 ---
 title: 第 3 章　邏輯與量詞
-description: 用 intro、exact、apply、constructor、cases 等 tactic 處理且、或、非、全稱與存在量詞，並理解 constructive 與 classical 推理。
+description: 把離散數學裡的「且、或、非、對所有、存在」逐句翻成 Lean：每個邏輯符號都有「怎麼證明它」與「怎麼使用它」兩個動作。
 sidebar:
   order: 3
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import PaperVsLean from '../../../components/PaperVsLean.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import Term from '../../../components/Term.astro';
+import GoalSteps from '../../../components/GoalSteps.astro';
+import AskAI from '../../../components/AskAI.astro';
+import AIDialogue from '../../../components/AIDialogue.astro';
+import QuantOrder from '../../../components/figures/QuantOrder.astro';
+
+<UniCourse courses="離散數學 · 數學導論（證明方法）">
+
+離散數學第一、二週學的命題邏輯與量詞，以及「直接證明、分情況證明、逆否證明、反證法」，在這一章都會變成具體的 Lean 動作。你在課本上寫過的證明，幾乎可以一句一句對應過來。
+
+</UniCourse>
 
 ## 本章目標
 
-1. 對每個邏輯符號，知道「要證明它」與「手上有它」時分別用什麼 tactic。
-2. 能處理 `∀` 與 `∃`，並看出量詞順序不同的兩個陳述意義完全不同。
-3. 理解 constructive 與 classical 推理的差別，以及 Lean 中排中律的實際地位。
-4. 練習把一句中文數學敘述翻譯成 Lean 陳述，並檢查翻譯是否忠實。
+1. 看到一個邏輯符號，知道「要**證明**它」與「手上**有**它」時各該做什麼。
+2. 能把課本上分情況、逆否、存在性的證明，一句一句翻成 Lean。
+3. 看出量詞順序不同的兩個陳述，數學意義完全不同。
 
-## 一張表：引入與消去
+## 一個核心觀念：每個符號都有兩個動作
 
-自然演繹（natural deduction）把每個邏輯符號的規則分成兩類：**引入**（如何證明它）與**消去**（如何使用它）。Lean 的 tactic 幾乎一對一對應這些規則。
+課本上的邏輯規則可以分成兩類。
 
-| 符號 | 目標是它時（引入） | 假設中有它時（消去） |
+- **引入**：怎麼「證明」一個含有這個符號的命題。例如要證「P 且 Q」，就分別證明 P 與 Q。
+- **消去**：怎麼「使用」一個已知的、含有這個符號的命題。例如已知「P 且 Q」，就可以單獨拿出 P 來用。
+
+Lean 的 tactic 幾乎一對一對應這兩類規則。所以卡住的時候，只要問自己兩個問題：**目標最外層是什麼符號？假設最外層是什麼符號？**
+
+<Term term="tactic" short="證明裡的一個「動作」，例如「分成兩個子目標」或「交出現成的證據」。">
+
+在 `by` 後面一行一行寫的指令就是 tactic。每執行一個 tactic，Lean 右側的 Infoview 就會顯示新的「目前已知」與「還要證明的目標」。tactic 不是魔法，它只是把課本上「我們接下來證明……」這類句子變成電腦能檢查的步驟。
+
+</Term>
+
+## 且：分別證明兩邊
+
+先看最簡單的課本證明。左欄是你在離散數學作業上會寫的句子，右欄是對應的 Lean。
+
+<PaperVsLean file="Course/University.lean" region="uni-and-intro" rows={["2", "3", "4", "5"]}>
+  <Fragment slot="p1">**定理**：若 $P$ 成立且 $Q$ 成立，則 $P \land Q$ 成立。</Fragment>
+  <Fragment slot="p2">要證明「且」，只需分別證明兩邊。</Fragment>
+  <Fragment slot="p3">左邊 $P$：由假設直接得到。</Fragment>
+  <Fragment slot="p4">右邊 $Q$：同樣由假設直接得到。證畢。</Fragment>
+</PaperVsLean>
+
+`constructor` 是「且」的引入：它把一個目標 `P ∧ Q` 拆成兩個目標 `P` 與 `Q`。開頭的 `·` 表示「現在處理其中一個目標」，讓結構和紙上的兩段一樣清楚。
+
+反過來，如果「且」出現在**假設**裡，例如 `h : P ∧ Q`，那就用消去：`h.1` 是 `P` 的證據，`h.2` 是 `Q` 的證據；也可以寫 `obtain ⟨hp, hq⟩ := h` 一次拆開並命名。課程檔案中的 `and-swap` 就是先拆再組：
+
+<LeanCode file="Course/Logic.lean" region="and-swap" />
+
+## 蘊含：先假設，再倒推
+
+課本說「假設 $P$，要證 $R$」時，Lean 寫 `intro hp`。課本說「要證 $R$，只需證 $Q$（因為 $Q \Rightarrow R$）」時，Lean 寫 `apply`。下面把每一步之後 Infoview 的內容列出來，你可以和 VS Code 中實際看到的對照：
+
+<LeanCode file="Course/Logic.lean" region="imp-trans-steps" />
+
+<GoalSteps
+  title="imp_trans_steps 的目標如何一步步變化"
+  start={"hpq : P → Q\nhqr : Q → R\n⊢ P → R"}
+  steps={[
+    { tactic: 'intro hp', note: '「假設 P」。P 進入已知，目標只剩 R。', goal: 'hp : P\n⊢ R' },
+    { tactic: 'apply hqr', note: '已知 Q → R，所以要證 R 只需證 Q（倒推一步）。', goal: '⊢ Q' },
+    { tactic: 'apply hpq', note: '再倒推一步：要證 Q 只需證 P。', goal: '⊢ P' },
+    { tactic: 'exact hp', note: 'P 已經在手上，直接交出。', goal: 'No goals' },
+  ]}
+/>
+
+（為了版面，上面只列出每一步新增或改變的那幾行；實際 Infoview 會重複列出所有假設。）
+
+## 或：分情況證明
+
+課本中「分情況討論」就是「或」的消去。已知「$P$ 或 $Q$」時，兩種情況都要推出結論。
+
+<PaperVsLean file="Course/University.lean" region="uni-or-swap" rows={["2", "3", "4", "5-6", "7-8"]}>
+  <Fragment slot="p1">**定理**：若 $P \lor Q$，則 $Q \lor P$。</Fragment>
+  <Fragment slot="p2">假設 $P \lor Q$ 成立。</Fragment>
+  <Fragment slot="p3">分兩種情況討論。</Fragment>
+  <Fragment slot="p4">情況一：$P$ 成立。那麼 $Q \lor P$ 的**右邊**成立。</Fragment>
+  <Fragment slot="p5">情況二：$Q$ 成立。那麼 $Q \lor P$ 的**左邊**成立。證畢。</Fragment>
+</PaperVsLean>
+
+注意 `left` 與 `right` 是「或」的引入：要證明 `Q ∨ P`，必須**選一邊**並交出那一邊的證據。選錯邊時 Lean 不會報錯，只會讓你卡在一個證不出來的目標上；這時請回到紙上想：在這個情況下，到底是哪一邊成立？
+
+## 非：推出矛盾
+
+在 Lean 裡，`¬ P` 的定義就是 `P → False`，意思是「如果 P 成立，就會矛盾」。所以證明 `¬ P` 和證明蘊含一樣，先 `intro`，再設法得到 `False`。課本上的**逆否證明**正好用到這件事：
+
+<PaperVsLean file="Course/University.lean" region="uni-contrapositive" rows={["2", "3", "4"]}>
+  <Fragment slot="p1">**定理**：若 $P \Rightarrow Q$，且 $Q$ 不成立，則 $P$ 不成立。</Fragment>
+  <Fragment slot="p2">假設 $P \Rightarrow Q$、假設 $\lnot Q$，再假設 $P$ 成立，要推出矛盾。</Fragment>
+  <Fragment slot="p3">由 $P$ 與 $P \Rightarrow Q$ 得到 $Q$，這和 $\lnot Q$ 矛盾。證畢。</Fragment>
+</PaperVsLean>
+
+`hpq hp` 是「把 P 的證據餵給 P → Q」，得到 Q 的證據；`hnq (hpq hp)` 再把它餵給 `Q → False`，得到 `False`。這就是「由 Q 與非 Q 得到矛盾」。
+
+## 把剛才學到的整理成一張表
+
+上面每個例子，其實都是在查同一張表。以後卡住時，回來這裡找「目標」或「假設」最外層的符號：
+
+| 符號 | 目標是它時（引入：怎麼證明） | 假設中有它時（消去：怎麼使用） |
 | --- | --- | --- |
 | `p → q` | `intro hp` | `apply h` 或 `h hp` |
 | `p ∧ q` | `constructor` | `obtain ⟨hp, hq⟩ := h` |
 | `p ∨ q` | `left` 或 `right` | `rcases h with hp \| hq` |
-| `¬ p` | `intro hp`（目標變成 `False`） | `exact absurd hp h` 或 `exact h hp` |
+| `¬ p` | `intro hp`（目標變成 `False`） | `exact h hp`（得到 `False`） |
 | `False` | 通常無法直接證明 | `exact h.elim` 或 `contradiction` |
 | `∀ x, P x` | `intro x` | `h a`（套用到特定的 `a`） |
-| `∃ x, P x` | `use a`，再證 `P a` | `obtain ⟨x, hx⟩ := h` |
+| `∃ x, P x` | `use a` 或 `exact ⟨a, 證據⟩` | `obtain ⟨x, hx⟩ := h` |
 
-這張表值得反覆查閱。遇到卡住時，先問自己兩個問題：**目標的最外層符號是什麼？我手上有哪些假設的最外層符號可以拆？**
+## 量詞：「對所有」與「存在」
 
-## 蘊含：`intro` 與 `apply`
+<Term term="見證（witness）" short="證明「存在某個 x」時，你實際拿出來的那個 x。">
 
-當目標是 `p → q`，數學上我們說「假設 p」。Lean 中就是 `intro hp`：目標變成 `q`，假設中多了 `hp : p`。
+課本上證明「存在 $m$ 使得……」時，我們會說「取 $m = n + 1$」。這個被取出來的 $m$ 就叫見證。在 Lean 中，存在性的證明就是一對東西：見證本身，加上「它確實滿足條件」的證據，寫成 `⟨見證, 證據⟩`。
 
-當目標是 `r`，而你手上有 `h : q → r`，數學上我們說「要證 r，只需證 q」。Lean 中是 `apply h`：目標變成 `q`。這是**倒推**的寫法。
+</Term>
 
-上一章看過的 `imp-trans` 區段，在 `intro` 之後用一行 `exact hQR (hPQ hP)` 直接交出整個 proof term。`imp-trans-steps` 區段證明同一個陳述，但把這一行拆成 `apply` 的倒推步驟：
+離散數學中的經典例子：「沒有最大的自然數」。課本的精確寫法是「對每個自然數 $n$，都存在 $m$ 使得 $n < m$」。
 
-<LeanCode file="Course/Logic.lean" region="imp-trans-steps" />
+<PaperVsLean file="Course/University.lean" region="uni-no-largest" rows={["2", "3", "4"]}>
+  <Fragment slot="p1">**定理**：$\forall n \in \mathbb{N},\ \exists m \in \mathbb{N},\ n < m$。</Fragment>
+  <Fragment slot="p2">任取一個自然數 $n$。</Fragment>
+  <Fragment slot="p3">取 $m = n + 1$，則 $n < n + 1$。證畢。</Fragment>
+</PaperVsLean>
 
-請在 VS Code 裡逐行觀察：`intro hp` 讓假設多了 `hp : P`、目標變成 `R`；`apply hqr` 把目標退回 `Q`；`apply hpq` 再退回 `P`；最後 `exact hp` 交出手上的證據。每一次 `apply`，都把目標換成所用蘊含的前提。
+`intro n` 就是「任取 n」；`⟨n + 1, Nat.lt_succ_self n⟩` 就是「取 m = n + 1，而 `Nat.lt_succ_self n` 是 n < n + 1 的證據」。
 
-## 且：拆開與組合
+再看一個把見證放在外層的例子：「存在一個實數 $x$，使得每個實數 $y$ 的平方都不小於 $x$」。見證是 $x = 0$，理由是平方非負：
 
-`and-swap` 區段證明「p 且 q 推出 q 且 p」：
+<LeanCode file="Course/University.lean" region="uni-square-lower-bound" />
 
-<LeanCode file="Course/Logic.lean" region="and-swap" />
-
-這個證明在 `intro h` 之後只有一行：用 `h.2` 與 `h.1` **拆出**假設中 `∧` 的兩個證據，再用角括號把它們**組合**成目標的 `∧`，順序對調。同一件事也可以寫成更分步的 tactic 版本：
-
-```lean
-  obtain ⟨hp, hq⟩ := h
-  constructor
-  · exact hq
-  · exact hp
-```
-
-先拆開假設，再用 `constructor` 分別交出兩邊。請注意一個習慣：每次拆開一個假設時，給它的兩個部分取有意義的名字，例如 `hp`、`hq`，之後讀 proof state 會輕鬆許多。
-
-## 或：分情況
-
-使用 `h : p ∨ q` 的唯一方式是**分情況**：情況一假設 p，情況二假設 q，兩種情況都要證出目標。`rcases h with hp | hq` 會產生兩個目標。
-
-要**證明** `p ∨ q`，則要選一邊：`left` 讓目標變成 `p`，`right` 讓目標變成 `q`。選錯邊不會報錯，只會讓你卡在一個證不出來的目標上。這時請回頭想：數學上，到底是哪一邊成立？
-
-## 非與矛盾
-
-`¬ p` 被定義為 `p → False`。所以要證明 `¬ p`，就是 `intro hp`，然後證明 `False`，也就是推出矛盾。
-
-`False` 是沒有證明的命題，因此你不會「直接證明 False」，而是從互相衝突的假設中得到它：如果同時有 `hp : p` 與 `hnp : ¬ p`，那麼 `hnp hp : False`。反過來，如果手上已經有 `False` 的證明，任何目標都可以由它得到（「從矛盾可以推出一切」）。
-
-## 量詞
-
-`∀ x : α, P x` 的證明，在 Lean 中就是一個函數：給任意 `x`，回傳 `P x` 的證明。所以 `intro x` 的意思是「任取一個 x」。
-
-反過來，**使用**一個全稱假設，就是把這個函數套用到你指定的元素上。`quantifiers` 區段示範的就是這件事：已知每個 `x` 都滿足 `P`，把 `h` 套用到 `a`，得到 `P a`。
-
-<LeanCode file="Course/Logic.lean" region="quantifiers" />
-
-`∃ x : α, P x` 的證明，是一對：一個具體的見證 `a`，加上 `P a` 的證明。所以 `use a` 的意思是「取 x 為 a」，接著證明 `P a`。使用一個存在的假設時，`obtain ⟨x, hx⟩ := h` 的意思是「設 x 為那個滿足條件的元素」。課程範例檔沒有存在量詞的例子，練習 3.3 會讓你親手用 `use`。
+這裡 `refine ⟨0, ?_⟩` 的意思是「先交出見證 0，證據待會兒再補」。`?_` 會變成新的目標。
 
 ### 量詞順序是翻譯中最常見的錯誤
 
-比較以下兩句：
+<QuantOrder />
 
-- 「對每個自然數 n，都存在 m 使得 n 小於 m。」寫成 `∀ n : ℕ, ∃ m : ℕ, n < m`。這是真的：取 m = n + 1。
-- 「存在 m，使得對每個自然數 n，n 小於 m。」寫成 `∃ m : ℕ, ∀ n : ℕ, n < m`。這是假的：沒有最大的自然數。
+課本口語常寫成「對所有 n 都有某個 m」，這句話可以讀成上圖左邊，也可以被誤讀成右邊。**檢查量詞順序是你的工作**：Lean 會接受兩個陳述都是合法命題，只是其中一個證不出來。AI 在翻譯這類句子時特別容易出錯，下面「和 AI 一起學」會實際練習。
 
-兩句只差了量詞的順序，意義卻相反。AI 在翻譯數學敘述時，偶爾會混淆這類順序，尤其是原文用口語寫成「對所有 n 都有某個 m」這類模糊句式時。**檢查量詞順序是你的工作**，Lean 無法替你做：兩個陳述在 Lean 中都是合法的命題，只是其中一個證不出來。
+## 反證法與排中律
 
-## Constructive 與 classical：關於排中律
+課本中的反證法：「假設結論不成立，推出矛盾」。Lean 中可以直接用 `by_contra h`，它會把「結論的否定」放進假設，目標變成 `False`。
 
-排中律說：對任何命題 p，`p ∨ ¬ p` 成立。在一般數學課上，我們理所當然地使用它，例如反證法。
+<details>
+<summary>補充：為什麼有人說「P 或非 P」不能證明？（constructive 與 classical）</summary>
 
-從上面「或」的規則來看，證明 `p ∨ ¬ p` 需要**選一邊**並交出證據。對一個任意的、我們一無所知的 p，只用引入與消去規則，無法決定該選哪邊。這就是 **constructive**（構造式）邏輯的觀點：只用這些基本規則，排中律推不出來。
+從上面的表看，要證明 `p ∨ ¬ p`，必須**選一邊**並交出證據。對一個我們一無所知的 p，只用引入與消去規則，無法決定該選哪一邊。這就是 **constructive**（構造式）邏輯的觀點：只用基本規則，排中律推不出來。
 
-但這**不代表 Lean 不能證明排中律**。Lean 的標準函式庫提供 `Classical.em : ∀ p, p ∨ ¬ p`，它是由 `Classical.choice` 等標準公理推得的定理。mathlib 的數學大量使用 classical 推理，`by_contra`（反證法）與 `by_cases`（對任意命題分情況）也都可以直接使用。
+但 Lean 的標準函式庫加入了 `Classical.choice` 等標準公理，排中律因此是一個定理 `Classical.em : ∀ p, p ∨ ¬ p`。mathlib 的數學大量使用這種 classical 推理，`by_contra`、`by_cases` 都可以放心使用。所以正確說法是：「在不用 classical 公理的片段中不可證」，不能說成「Lean 不能證明排中律」。
 
-所以正確的說法是：
-
-- 在不使用 classical 公理的片段中，排中律不可證。
-- Lean 加入了 `Classical.choice` 等公理後，排中律是一個定理，正常數學工作可以放心使用。
-- 用了這些標準公理，`#print axioms` 會列出 `Classical.choice`，這**不是**作弊的跡象。
-
-## 動手：雙重否定的兩個方向
-
-從[第 6 集約 1:20](https://www.youtube.com/watch?v=Dqqh1G-CnL8&t=80s)開始看，把 `P → ¬¬P` 與 `¬¬P → P` 分別寫在紙上。先把每個 `¬A` 展開成 `A → False`，再判斷兩邊各要交出什麼。
+想看具體例子，可以從 [AI101 第 6 集約 1:20](https://www.youtube.com/watch?v=Dqqh1G-CnL8&t=80s) 開始看，再對照下面兩個方向的雙重否定：
 
 <LeanCode file="Course/VideoPractice.lean" region="double-negation" />
 
-第一個方向：已知 `hP : P`，若再收到 `hNotP : P → False`，套用 `hNotP hP` 就得到矛盾。反方向面對任意命題時，這裡使用標準古典定理 `Classical.byContradiction`，不是另加一條自訂公理。
+第一個方向只要把 `hP` 餵給 `hNotP` 就得到矛盾；反方向對任意命題要用 `Classical.byContradiction`。若在練習檔寫 `import Course.VideoPractice` 再執行 `#print axioms`，第二個定理會多出 `Classical.choice` 等標準公理，這是正常的，不是作弊。
 
-請在自己的練習檔先寫 `import Course.VideoPractice`，再查詢兩個定理：
+</details>
+
+> **查核提示**：Lean 接受一個證明，只代表「你寫下的陳述」被證明了。陳述的量詞順序與假設是否忠於課本，仍然要你自己看。
+
+## 和 AI 一起學
+
+<AskAI
+  task="請 AI 把課本上的一句量詞敘述翻成 Lean，再由你檢查量詞順序。"
+  prompt={"我在修離散數學。請把下面這句話翻成 Lean 4（mathlib）的陳述，先不要證明。\n句子：「對每個正整數 n，都存在一個質數 p 比 n 大。」\n請用中文逐一說明：\n1. 每個量詞（∀、∃）各對應原句哪幾個字；\n2. 量詞的順序為什麼是這樣；\n3. 「正整數」這個條件在 Lean 中放在哪裡。"}
+>
+
+- 量詞順序是不是「先 ∀ n，再 ∃ p」？如果 AI 寫成 `∃ p, ∀ n`，那就是上圖右邊那個錯誤的陳述。
+- 「正整數」有沒有被寫進去（例如 `0 < n →`）？還是被默默拿掉了？在這題拿掉其實會讓陳述**更強**，請想想為什麼它仍然成立。
+- 「質數」用的是 mathlib 的 `Nat.Prime` 嗎？請用 `#check Nat.Prime` 確認它真的存在。
+
+</AskAI>
+
+### 真實紀錄：兩個 AI 怎麼翻「沒有最大的自然數」
+
+我們把「沒有最大的自然數」這句話，原封不動交給兩個 AI，請它們翻成 Lean 並自行檢查。兩份結果都通過 Lean 編譯，但**選了不同的陳述**。
+
+<AIDialogue tool="Claude Code" model="claude-opus-5-5" date="2026-10-12" result="通過獨立編譯，無錯誤、無警告。" record="quantifier/claude">
+
+主定理採字面翻譯，另附一個正面說法：
 
 ```lean
-#print axioms Course.add_double_negation
-#print axioms Course.eliminate_double_negation
+theorem no_largest_nat : ¬ ∃ n : ℕ, ∀ m : ℕ, m ≤ n
+theorem exists_larger_nat : ∀ n : ℕ, ∃ m : ℕ, n < m
 ```
 
-讀出實際依賴，說明為什麼兩份證明使用的基礎不同。`P ∨ ¬P` 在 Lean 的標準古典基礎下也可由 `Classical.em` 得到；不能把「構造式片段中不可證」說成「Lean 不能證明」。
+> 這兩個定理之間的關係，正是離散數學裡的量詞否定規則：¬∃n ∀m (m ≤ n) ⟺ ∀n ∃m ¬(m ≤ n) ⟺ ∀n ∃m (n < m)
+
+</AIDialogue>
+
+<AIDialogue tool="Codex" model="gpt-6.1-sol（本機設定）" date="2026-10-12" result="通過獨立編譯，無錯誤、無警告。" record="quantifier/codex">
+
+只寫正面說法：
+
+```lean
+theorem no_largest_natural_number : ∀ n : ℕ, ∃ m : ℕ, n < m
+```
+
+</AIDialogue>
+
+**你該看出什麼？** 兩者都忠於原句，量詞順序也都正確。但要注意，Claude 說兩個定理「等價」，它其實是分別證明了兩個定理，**並沒有**在 Lean 中證明它們等價。那句「等價」是 AI 的數學說明，Lean 沒有檢查過。若要確認，你可以用本章的否定規則自己在紙上推一次，或在 Lean 中寫成 `↔` 再證明。這正是本課程反覆強調的分工：**Lean 檢查它被交付的定理；AI 在文字裡做的其他宣稱，要由你判斷。**
 
 ## 練習
 
-### 練習 3.1　或的交換
+### 練習 3.1　翻譯並證明
 
-證明 `p ∨ q → q ∨ p`。
+把「每個實數都有一個比它大的實數」翻譯成 Lean 陳述並證明。先在紙上寫出見證，再動手。
 
 ```lean
-example (p q : Prop) : p ∨ q → q ∨ p := by
+import Mathlib
+
+example : sorry := by
   sorry
 ```
 
 <details>
-<summary>提示一</summary>
+<summary>提示</summary>
 
-先 `intro h`。現在手上有一個「或」，該做什麼？
-
-</details>
-
-<details>
-<summary>提示二</summary>
-
-`rcases h with hp | hq` 之後有兩個目標。第一個目標中你有 `hp : p`，要證 `q ∨ p`：該選左邊還是右邊？
+外層是「對每個實數 x」，內層是「存在實數 y」。見證可以和 x 有關：給定 x，哪一個 y 一定比 x 大？要證明 `x < x + 1` 這類線性不等式，可以用 `linarith`。
 
 </details>
 
@@ -150,64 +234,28 @@ example (p q : Prop) : p ∨ q → q ∨ p := by
 <summary>解答</summary>
 
 ```lean
-  intro h
-  rcases h with hp | hq
-  · right
-    exact hp
-  · left
-    exact hq
+import Mathlib
+
+example : ∀ x : ℝ, ∃ y : ℝ, x < y := by
+  intro x
+  exact ⟨x + 1, by linarith⟩
 ```
 
-`·` 用來聚焦在其中一個目標上，讓結構清楚。也可以把 `right` 加 `exact hp` 合併成一行 `exact Or.inr hp`。
+這和本章「沒有最大的自然數」的結構完全相同，只是型別從 `ℕ` 換成 `ℝ`。如果把量詞順序寫反成 `∃ y : ℝ, ∀ x : ℝ, x < y`，陳述就變成「有一個實數 y 比所有實數（包括 y 自己）都大」，那是假的，Lean 不會讓你證出來。
 
 </details>
 
-### 練習 3.2　否定的使用
+## 本章小結
 
-證明 `(p → q) → ¬ q → ¬ p`（逆否）。
-
-<details>
-<summary>提示</summary>
-
-`¬ p` 就是 `p → False`。連續 `intro` 三次之後，目標是 `False`。手上的哪兩個東西可以組成矛盾？
-
-</details>
-
-<details>
-<summary>解答</summary>
-
-```lean
-example (p q : Prop) : (p → q) → ¬ q → ¬ p := by
-  intro hpq hnq hp
-  exact hnq (hpq hp)
-```
-
-注意這個證明沒有用到排中律；反過來的方向 `(¬ q → ¬ p) → (p → q)` 則需要 classical 推理。
-
-</details>
-
-### 練習 3.3　翻譯並判斷真假
-
-把「有一個實數 x，使得對所有實數 y，x 小於等於 y 的平方」翻譯成 Lean 陳述，判斷真假，並說明哪一個見證可以用。
-
-<details>
-<summary>提示</summary>
-
-先寫出量詞順序：外層是 `∃ x : ℝ`，內層是 `∀ y : ℝ`。y 的平方最小可以是多少？
-
-</details>
-
-<details>
-<summary>解答</summary>
-
-`∃ x : ℝ, ∀ y : ℝ, x ≤ y ^ 2`。這是真的，取 x = 0，因為任何實數的平方都不小於 0。在 Lean 中可以 `use 0`，接著 `intro y` 並用 mathlib 的 `sq_nonneg y` 收尾。`use` 與 `sq_nonneg` 都來自 mathlib，所以練習檔開頭需要有 `import Mathlib`（或更精確的 mathlib import）（[第 5 章](../05-mathlib/) 會介紹如何找到這類引理）。如果把量詞順序顛倒成 `∀ y, ∃ x, ...`，也是真的，但意義比較弱：x 可以隨 y 改變。
-
-</details>
+- 每個邏輯符號都有兩個動作：引入（怎麼證明它）與消去（怎麼使用它）。卡住時先看目標與假設的最外層符號。
+- 課本上的「分別證明兩邊」、「分情況」、「逆否」、「取 m = n + 1」，分別對應 `constructor`、`rcases`、`intro` 加函數套用、`⟨見證, 證據⟩`。
+- 量詞順序決定數學意義。Lean 不會替你檢查翻譯是否忠實，這一步是你的責任。
 
 ## 延伸閱讀與觀看
 
-- [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Propositions and Proofs」與「Quantifiers and Equality」兩章；其中也討論了 classical 邏輯。
+- [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Propositions and Proofs」與「Quantifiers and Equality」兩章。
 - [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 的「Logic」一章，有大量數學風格的練習。
-- 觀看建議（AI101 系列；對照引入、消去與上面的雙重否定練習）：第 3 集〈[你早就在用的推論規則](https://www.youtube.com/watch?v=aQP13mmH2mk)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉、第 6 集〈[為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8)〉。
+- 與大學課程的對照，可看本站的 [大學數學 × Lean 對照](../../guides/university-map/)。
+- 觀看建議（AI101 系列）：第 3 集〈[你早就在用的推論規則](https://www.youtube.com/watch?v=aQP13mmH2mk)〉、第 5 集〈[且、或、非，都是型別](https://www.youtube.com/watch?v=H7KaiMwzyJQ)〉、第 6 集〈[為什麼「P或非P」造不出來？](https://www.youtube.com/watch?v=Dqqh1G-CnL8)〉。
 - 實作：學完本章即可挑戰 [實戰 1：命題邏輯證明修復](../../labs/01-proof-repair/)。
 - 下一章：[歸納與有限和](../04-induction-and-sums/)。

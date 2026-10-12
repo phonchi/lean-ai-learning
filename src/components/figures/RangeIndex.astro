@@ -1,0 +1,40 @@
+---
+// 第 4 章：n = 3 時，range n、range (n+1)、Icc 1 n 各自包含哪些索引。
+const xs = [300, 360, 420, 480, 540];
+const rows = [
+  { y: 92, name: 'range 3', sub: '項：2i + 1', idx: [0, 1, 2], term: (i: number) => 2 * i + 1, sum: '1 + 3 + 5 = 9' },
+  { y: 160, name: 'range (3 + 1)', sub: '項：2i + 1', idx: [0, 1, 2, 3], term: (i: number) => 2 * i + 1, sum: '1 + 3 + 5 + 7 = 16' },
+  { y: 228, name: 'Icc 1 3', sub: '項：2i − 1', idx: [1, 2, 3], term: (i: number) => 2 * i - 1, sum: '1 + 3 + 5 = 9' },
+];
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 760 280" role="img" aria-labelledby="ri-title ri-desc" style="min-width:620px">
+    <title id="ri-title">三種索引範圍：range 3、range (3 + 1)、Icc 1 3</title>
+    <desc id="ri-desc">索引 i 從 0 排到 4。range 3 包含 0、1、2，和為 9；range (3 + 1) 包含 0 到 3，多出 i 等於 3 的一項 7，和為 16；Icc 1 3 包含 1、2、3，每項是 2i 減 1，和也是 9。</desc>
+    <text class="t-s" x="24" y="40">寫法</text>
+    <text class="t-s" x="250" y="40">索引 i</text>
+    {xs.map((x, i) => (<text class="t-ms" x={x} y="40" text-anchor="middle">{i}</text>))}
+    <text class="t-s" x="590" y="40">n = 3 時的和</text>
+    <line class="rule" x1="24" y1="54" x2="736" y2="54"/>
+    {rows.map((r) => (
+      <g>
+        <text class="t-m" x="24" y={r.y - 2}>{r.name}</text>
+        <text class="t-s" x="24" y={r.y + 18}>{r.sub}</text>
+        <line class="line" x1="276" y1={r.y} x2="564" y2={r.y}/>
+        {xs.map((x) => (<circle class="dot" cx={x} cy={r.y} r="2.5"/>))}
+        {r.idx.map((i) => (
+          <g>
+            <rect class={r.name === 'range (3 + 1)' && i === 3 ? 'box-focal' : 'box'} x={xs[i] - 20} y={r.y - 16} width="40" height="32" rx="4"/>
+            <text class="t-m" x={xs[i]} y={r.y + 5} text-anchor="middle">{r.term(i)}</text>
+          </g>
+        ))}
+        <text class="t-m" x="590" y={r.y + 5}>{r.sum}</text>
+      </g>
+    ))}
+    <text class="t-a" x="480" y="200" text-anchor="middle">多出 i = 3</text>
+    <text class="t-s" x="24" y="268">方框內是該索引對應的那一項；沒有方框的索引不在範圍內。</text>
+  </svg>
+  </div>
+  <figcaption>三個和式長得很像。range 3 與 Icc 1 3 都是前 3 個奇數，只是索引起點和每項的寫法不同；range (3 + 1) 多了一項，變成前 4 個奇數。翻譯有限和之前，先把 n = 3 的項列出來。</figcaption>
+</figure>

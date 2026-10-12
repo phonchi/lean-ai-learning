@@ -1,0 +1,9 @@
+---
+// 章首的「對應大學課程」框。
+interface Props { courses: string; }
+const { courses } = Astro.props;
+---
+<aside class="uni-course" aria-label="對應大學課程">
+  <p class="uni-label">對應大學課程<span>{courses}</span></p>
+  <div class="uni-body"><slot /></div>
+</aside>

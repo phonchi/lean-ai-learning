@@ -1,0 +1,39 @@
+---
+// 進階 1：ε/2 條帶、N₁、N₂ 與 N = max(N₁, N₂)。
+const ns = Array.from({ length: 16 }, (_, k) => k + 1);
+const x = (n: number) => 96 + n * 36;
+const N1 = 4, N2 = 7, N = Math.max(N1, N2);
+const aDev = (n: number) => (n % 2 === 0 ? 1 : -1) * Math.min(52, 75 / n);
+const bDev = (n: number) => (n % 2 === 0 ? -1 : 1) * Math.min(52, 150 / n);
+const yA = 96, yB = 228, band = 22;
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 330" role="img" aria-labelledby="en-title en-desc" style="min-width:600px">
+    <title id="en-title">ε/2 條帶與 N = max(N₁, N₂)</title>
+    <desc id="en-desc">上方是數列 a_n，從 n 等於 4 起落在 A 加減 ε/2 的條帶內，所以 N₁ 等於 4。下方是數列 b_n，從 n 等於 7 起落在 B 加減 ε/2 的條帶內，所以 N₂ 等於 7。取 N 等於兩者的最大值 7，從這裡開始兩個數列同時落在各自的條帶內。</desc>
+    <!-- 上：aₙ -->
+    <rect class="box-dash" x="120" y={yA - band} width="580" height={band * 2}/>
+    <line class="rule" x1="120" y1={yA} x2="700" y2={yA}/>
+    <text class="t-m" x="24" y={yA + 5}>aₙ 與 A</text>
+    <text class="t-s" x="24" y={yA + 24}>帶寬 A ± ε/2</text>
+    <line class="line-dash" x1={x(N1)} y1="34" x2={x(N1)} y2="160"/>
+    <text class="t-ms" x={x(N1) + 6} y="34">N₁ = {N1}</text>
+    {ns.map((n) => (<circle class={n >= N ? 'dot-accent' : 'dot'} cx={x(n)} cy={yA + aDev(n)} r="4"/>))}
+    <!-- 下：bₙ -->
+    <rect class="box-dash" x="120" y={yB - band} width="580" height={band * 2}/>
+    <line class="rule" x1="120" y1={yB} x2="700" y2={yB}/>
+    <text class="t-m" x="24" y={yB + 5}>bₙ 與 B</text>
+    <text class="t-s" x="24" y={yB + 24}>帶寬 B ± ε/2</text>
+    <text class="t-ms" x={x(N2) + 6} y="170">N₂ = {N2}</text>
+    {ns.map((n) => (<circle class={n >= N ? 'dot-accent' : 'dot'} cx={x(n)} cy={yB + bDev(n)} r="4"/>))}
+    <!-- N = max -->
+    <line class="line-accent" x1={x(N)} y1="48" x2={x(N)} y2="292"/>
+    <line class="line" x1="120" y1="300" x2="700" y2="300"/>
+    {ns.map((n) => (<text class="t-ms" x={x(n)} y="318" text-anchor="middle">{n}</text>))}
+    <text class="t-s" x="24" y="318">n</text>
+    <text class="t-a" x={x(N) + 8} y="290">N = max(N₁, N₂) = {N}</text>
+  </svg>
+  </div>
+  <figcaption>每個數列各自需要一個起點：aₙ 從 N₁ 起留在 A ± ε/2 內，bₙ 從 N₂ 起留在 B ± ε/2 內。取兩者中較大的 N，之後的每個 n（強調色的點）兩邊誤差都小於 ε/2，相加才小於 ε。</figcaption>
+</figure>

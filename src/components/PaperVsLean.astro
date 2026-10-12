@@ -1,0 +1,31 @@
+---
+// 紙上證明與 Lean 逐行對照。Lean 行由 canonical 區段依行號取出；紙上文字以具名 slot p1、p2… 傳入（MDX 公式可正常渲染）。
+import { Code } from 'astro:components';
+import { readLeanSource, pickLines } from '../lib/leanSource';
+interface Props { file: string; region: string; rows: string[]; title?: string; }
+const { file, region, rows, title = '紙上證明 ↔ Lean' } = Astro.props;
+const code = readLeanSource(file, region);
+const label = `${file}:${region}`;
+const items = await Promise.all(rows.map(async (range, i) => {
+  const name = `p${i + 1}`;
+  if (!Astro.slots.has(name)) throw new Error(`PaperVsLean ${label} missing slot ${name}`);
+  return { range, lean: pickLines(code, range, label), paper: await Astro.slots.render(name) };
+}));
+---
+<figure class="pvl">
+  <figcaption class="pvl-head"><span>{title}</span><span class="pvl-file">{file}</span></figcaption>
+  <div class="pvl-cols" aria-hidden="true"><span>課本／紙上</span><span>Lean</span></div>
+  <ol class="pvl-rows">
+    {items.map((item, i) => (
+      <li class="pvl-row">
+        <span class="pvl-num">{i + 1}</span>
+        <div class="pvl-paper"><span class="pvl-tag">紙上</span><Fragment set:html={item.paper} /></div>
+        <div class="pvl-lean"><span class="pvl-tag">Lean</span><Code code={item.lean} lang="lean4" theme="github-light" /></div>
+      </li>
+    ))}
+  </ol>
+  <div class="pvl-foot"><button type="button" data-lean-copy data-code={code} aria-label={`複製 ${file} 的完整程式碼`}>複製完整 Lean 程式碼</button><span class="copy-feedback" aria-live="polite"></span></div>
+</figure>
+<script>
+  import '../scripts/copy';
+</script>

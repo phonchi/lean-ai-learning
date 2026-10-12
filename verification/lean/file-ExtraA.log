@@ -1,0 +1,4 @@
+3 : ℕ
+fun n => n + 1 : ℕ → ℕ
+add_nonneg.{u_1} {α : Type u_1} {a b : α} [AddZeroClass α] [Preorder α] [AddLeftMono α] (ha : 0 ≤ a) (hb : 0 ≤ b) :
+  0 ≤ a + b

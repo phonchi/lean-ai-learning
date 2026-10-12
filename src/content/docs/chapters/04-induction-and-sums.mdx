@@ -1,54 +1,84 @@
 ---
 title: 第 4 章　歸納與有限和
-description: 數學歸納法在 Lean 中的樣子：induction tactic、Finset.range 上的有限和、歸納假設的使用，以及自然數減法與除法的陷阱。
+description: 把離散數學的數學歸納法逐行翻成 Lean：induction 產生的兩個目標、有限和的索引範圍、拆代整理三步節奏，以及自然數減法與除法的陷阱。
 sidebar:
   order: 4
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import PaperVsLean from '../../../components/PaperVsLean.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import Term from '../../../components/Term.astro';
+import GoalSteps from '../../../components/GoalSteps.astro';
+import AskAI from '../../../components/AskAI.astro';
+import AIDialogue from '../../../components/AIDialogue.astro';
+import RangeIndex from '../../../components/figures/RangeIndex.astro';
+
+<UniCourse courses="離散數學 · 數學導論（證明方法）">
+
+離散數學講數學歸納法時，最常見的例題就是「前 n 個奇數和是 $n^2$」與高斯求和公式。課本的「基底＋歸納步驟」在 Lean 裡是一個 `induction`，加上它自動產生的兩個目標。本章也會碰到課本很少強調、但翻譯時一定會遇到的問題：$\Sigma$ 的索引到底從哪裡開始。
+
+</UniCourse>
 
 ## 本章目標
 
-1. 把熟悉的數學歸納法，對應到 Lean 的 `induction` tactic 與它產生的兩個目標。
-2. 讀懂 `∑ i ∈ Finset.range n, f i` 這種有限和記號，知道它的索引範圍。
-3. 掌握有限和歸納的固定節奏：拆出最後一項、代入歸納假設、整理代數。
-4. 辨認自然數上 `-` 與 `/` 的陷阱，並在翻譯題目時避開。
+1. 把課本的歸納證明（基底、歸納假設、歸納步驟）一行一行對應到 Lean 的 `induction`。
+2. 寫有限和之前先確認索引範圍，分得清 `range n`、`range (n + 1)`、`Icc 1 n`。
+3. 掌握有限和歸納的固定節奏「拆、代、整理」，並避開自然數減法與除法的陷阱。
 
-## 數學上的歸納法
+## 先在紙上：前 n 個奇數的和
 
-「前 n 個奇數的和是 n²」：1 = 1，1 + 3 = 4，1 + 3 + 5 = 9……。歸納證明如下：
+$1 = 1$，$1 + 3 = 4$，$1 + 3 + 5 = 9$……看起來前 n 個奇數的和是 $n^2$。課本的歸納證明是：
 
-- **基底**：n = 0 時，空和為 0，而 0² = 0。
-- **歸納步驟**：假設前 n 個奇數的和是 n²。前 n + 1 個奇數的和，等於前 n 個的和再加上第 n + 1 個奇數 2n + 1，所以是 n² + 2n + 1 = (n + 1)²。
+- **基底**：$n = 0$ 時，一個奇數都不加，空和是 0，而 $0^2 = 0$。
+- **歸納步驟**：假設前 n 個奇數的和是 $n^2$。前 $n + 1$ 個奇數的和，是前 n 個的和再加上下一個奇數 $2n + 1$，所以等於 $n^2 + 2n + 1 = (n + 1)^2$。
 
-這裡有兩個值得注意的選擇。第一，我們從 0 開始，而不是從 1 開始；在 Lean 中，自然數 `ℕ` 從 0 開始，以 0 為基底通常最自然。第二，「第 n + 1 個奇數」寫成 2n + 1，這依賴我們如何編號：如果奇數的編號是 i = 0, 1, 2, ...，那麼第 i 個奇數是 2i + 1。
+這裡有兩個選擇，和多數課本不一樣，請先留意：
 
-## 有限和的記號
+- **從 0 開始**：Lean 的自然數 `ℕ` 包含 0，以 0 為基底通常最順。很多課本從 $n = 1$ 開始，後面的真實紀錄會看到這個差異帶來什麼影響。
+- **編號從 0 開始**：第 0 個奇數是 1，第 k 個奇數是 $2k + 1$。所以前 n 個奇數就是 $k = 0, 1, \dots, n - 1$ 時的 $2k + 1$。
 
-在 mathlib 中，上述的和寫成：
+## 有限和在 Lean 中怎麼寫
 
-```lean
-∑ i ∈ Finset.range n, (2 * i + 1)
-```
-
-`Finset.range n` 是集合 `{0, 1, ..., n - 1}`，恰好 n 個元素。所以這個式子就是 i 從 0 跑到 n − 1，把 2i + 1 加起來，正好是前 n 個奇數。當 n = 0 時，`Finset.range 0` 是空集合，和為 0。
-
-**索引範圍是翻譯中最容易出錯的地方之一。** 請習慣在寫任何有限和之前，先列出 n = 0、1、2 時，這個和實際包含哪幾項。
-
-## Lean 中的歸納
-
-在 Lean 中對自然數 `n` 做歸納，寫成 `induction n with`，接著分兩個情況：
+上面的和，在 mathlib 中寫成：
 
 ```lean
-induction n with
-| zero => ...
-| succ n ih => ...
+∑ k ∈ Finset.range n, (2 * k + 1)
 ```
 
-- `zero` 情況：目標中的 `n` 被換成 `0`。
-- `succ n ih` 情況：目標中的 `n` 被換成 `n + 1`，同時多了一個假設 `ih`，就是「對 `n` 成立」的歸納假設。
+白話是「k 跑過 0 到 n − 1，把 2k + 1 加起來」。`Finset.range n` 就是 $\{0, 1, \dots, n - 1\}$，恰好 n 個數；n = 0 時它是空集合，和為 0。
 
-以前 n 個奇數和為例，進入 `succ` 情況時，Infoview 會顯示類似：
+<Term term="Finset.range n" short="集合 {0, 1, …, n − 1}，有限和最常用的索引範圍。">
+
+`Finset` 是 mathlib 的「有限集合」型別，有限和 `∑ i ∈ s, f i` 要求 `s` 是一個 `Finset`。常見的索引範圍有：
+
+- `Finset.range n`：$\{0, 1, \dots, n - 1\}$，共 n 個。
+- `Finset.Icc a b`：$\{a, a + 1, \dots, b\}$，兩端都包含（I 是 interval，cc 是 closed–closed）。
+- `Finset.Ico a b`：$\{a, \dots, b - 1\}$，包含左端、不含右端。
+
+`range n` 其實就是 `Ico 0 n`。課本的 $\sum_{i=1}^{n}$ 最直接的翻譯是 `Icc 1 n`。
+
+</Term>
+
+## 紙上證明 ↔ Lean
+
+把上面的證明逐行對到課程檔案的 `odd-sum`：
+
+<PaperVsLean file="Course/Induction.lean" region="odd-sum" rows={["2", "3", "4", "5", "6", "7"]}>
+  <Fragment slot="p1">**定理**：對每個自然數 $n$，$\sum_{k=0}^{n-1} (2k + 1) = n^2$。</Fragment>
+  <Fragment slot="p2">對 $n$ 做數學歸納法。</Fragment>
+  <Fragment slot="p3">**基底** $n = 0$：空和為 0，$0^2 = 0$。</Fragment>
+  <Fragment slot="p4">**歸納步驟**：假設對 $n$ 成立（歸納假設），要證對 $n + 1$ 成立。</Fragment>
+  <Fragment slot="p5">把最後一項 $2n + 1$ 拆出來，前面的部分用歸納假設換成 $n^2$。</Fragment>
+  <Fragment slot="p6">剩下 $n^2 + (2n + 1) = (n + 1)^2$，展開即得。證畢。</Fragment>
+</PaperVsLean>
+
+`induction n with` 會產生兩個目標，名字就是兩種情況：
+
+- `zero`：目標中的 `n` 換成 `0`。這是基底。
+- `succ n ih`：目標中的 `n` 換成 `n + 1`，同時多了一個假設 `ih`。`ih` 就是歸納假設，名字是你取的。
+
+進入 `succ` 情況時，Infoview 顯示：
 
 ```text
 n : ℕ
@@ -56,72 +86,172 @@ ih : ∑ k ∈ Finset.range n, (2 * k + 1) = n ^ 2
 ⊢ ∑ k ∈ Finset.range (n + 1), (2 * k + 1) = (n + 1) ^ 2
 ```
 
-這和紙上的歸納步驟一模一樣：已知 `ih`，要證 `n + 1` 的情況。（課程檔案用 `k` 當求和索引；索引用 `i` 或 `k` 只是名字不同，意義相同。）
+這就是紙上的「已知對 n 成立，要證對 n + 1 成立」。
 
 ## 三步節奏：拆、代、整理
 
-處理有限和的歸納步驟，幾乎總是同樣的三步：
+有限和的歸納步驟，幾乎都是同樣三步：
 
-1. **拆**：用 mathlib 的引理 `Finset.sum_range_succ` 把最後一項拆出來。它說的是：range (n + 1) 上的和，等於 range n 上的和，加上第 n 項。
-2. **代**：用 `rw [ih]` 把 range n 上的和換成歸納假設給的式子。
-3. **整理**：剩下的是一個純代數等式，例如 n² + (2n + 1) = (n + 1)²，交給 `ring`。
+1. **拆**：`Finset.sum_range_succ` 把最後一項拆出來。它說：`range (n + 1)` 上的和，等於 `range n` 上的和，再加第 n 項。
+2. **代**：`rw [ih]` 把 `range n` 上的和換成歸納假設給的式子。
+3. **整理**：剩下的是普通代數等式，交給 `ring`。
 
-課程專案中的完整證明在 `odd-sum` 區段：
+`ring` 只懂加、乘、次方，不懂 $\Sigma$。所以整理之前，請先確認目標裡的 `∑` 已經全部消失。
 
-<LeanCode file="Course/Induction.lean" region="odd-sum" />
+### 示範：高斯公式
 
-請逐行觀察：在 `rw` 之後，目標裡的 `∑` 是否已經完全消失？如果還有 `∑`，`ring` 是無法處理的，因為 `ring` 只懂加法、乘法與次方的代數，不懂和式。
+課本的高斯公式是 $1 + 2 + \dots + n = \dfrac{n(n + 1)}{2}$。在 Lean 中我們改寫成「兩倍形式」：
+
+$$
+2 \sum_{i=0}^{n} i = n(n + 1)
+$$
+
+這樣做是為了避開自然數除法（後面「自然數的兩個陷阱」會說明）。兩邊同乘 2 是等價改寫，不是改題目。另外，這裡的和從 $i = 0$ 加到 $n$，多加的 0 不影響結果，所以索引範圍是 `range (n + 1)`。
+
+<LeanCode file="Course/University.lean" region="uni-gauss" />
+
+這份證明刻意把 `rw` 拆成兩行，讓你看到中間的目標。下面是 `succ` 情況的每一步：
+
+<GoalSteps
+  title="uni_gauss 的 succ 情況如何一步步變化"
+  start={"n : ℕ\nih : 2 * ∑ i ∈ Finset.range (n + 1), i = n * (n + 1)\n⊢ 2 * ∑ i ∈ Finset.range (n + 1 + 1), i = (n + 1) * (n + 1 + 1)"}
+  steps={[
+    { tactic: 'rw [Finset.sum_range_succ]', note: '拆：把最後一項 n + 1 拆出來。Lean 在這裡把求和變數顯示成 x，名字不同、意義相同。', goal: '⊢ 2 * (∑ x ∈ Finset.range (n + 1), x + (n + 1)) = (n + 1) * (n + 1 + 1)' },
+    { tactic: 'rw [mul_add, ih]', note: '代：ih 說的是「2 * 和」，但目標是「2 *（和 + 最後一項）」。先用 mul_add 把 2 分配進去，才出現 ih 的左邊，可以改寫。', goal: '⊢ n * (n + 1) + 2 * (n + 1) = (n + 1) * (n + 1 + 1)' },
+    { tactic: 'ring', note: '整理：∑ 已經消失，剩下純代數等式。', goal: 'No goals' },
+  ]}
+/>
+
+（為了版面，`rw` 之後省略了沒有改變的 `n` 與 `ih`。）
+
+第二步是初學者最常卡住的地方：`rw [ih]` 失敗，訊息說找不到要改寫的式子。原因是 `rw` 只認字面上一模一樣的式子。（只有一個例外：和式裡的索引名稱不算數。上面 GoalSteps 中目標的索引顯示成 `x`、`ih` 裡是 `i`，Lean 仍把兩者看成同一個式子，因為 `∑ i, …` 和 `∑ x, …` 只是把同一個「虛擬變數」取了不同名字。）遇到這種情況，先看目標，問自己「要怎麼變形，才會出現 `ih` 的左邊」。`zero` 情況的 `simp` 若沒有完全關掉目標，用 Infoview 看剩下什麼，`rfl` 或 `norm_num` 通常可以處理。
+
+## 索引範圍：先列出 n = 3 的項
+
+**索引範圍是有限和翻譯中最容易出錯的地方。** 寫任何有限和之前，先列出 n = 3 時它實際包含哪幾項。下面三個式子看起來很像：
+
+| 寫法 | 索引 i | 各項 | n = 3 時的和 | 一般的值 |
+| --- | --- | --- | --- | --- |
+| `∑ i ∈ Finset.range n, (2 * i + 1)` | 0, 1, 2 | 1 + 3 + 5 | 9 | $n^2$ |
+| `∑ i ∈ Finset.range (n + 1), (2 * i + 1)` | 0, 1, 2, 3 | 1 + 3 + 5 + 7 | 16 | $(n + 1)^2$ |
+| `∑ i ∈ Finset.Icc 1 n, (2 * i - 1)` | 1, 2, 3 | 1 + 3 + 5 | 9 | $n^2$ |
+
+<RangeIndex />
+
+第一列和第三列是同一個數學量，只是索引起點和每項的寫法不同；第二列多了一項，是另一個陳述。
+
+這張表也可以讓 Lean 幫你算。`decide` 會把具體的有限計算直接算完，算錯就不會通過：
+
+<LeanCode file="Course/ExtraB.lean" region="extrab-n3-table" />
+
+最後一行是一個常見的錯誤翻譯。有人把「$1 + 2 + \dots + n = n(n + 1)/2$」寫成 `∑ i ∈ Finset.range n, i = n * (n + 1) / 2`。n = 3 時，`Finset.range 3` 只有 0、1、2，和是 3，右邊卻是 $3 \times 4 / 2 = 6$。左邊其實是 $0 + 1 + \dots + (n - 1)$。修正方法有兩種：把範圍改成 `Finset.range (n + 1)`，或改用 `Finset.Icc 1 n`。這類錯誤只要算一個小的 n 就會發現。
 
 ## 自然數的兩個陷阱
 
-### 減法會截斷
+**減法會截斷。** `ℕ` 沒有負數，所以 $a < b$ 時 `a - b` 定義為 `0`，例如 `(2 : ℕ) - 5 = 0`。這叫截斷減法。
 
-在 `ℕ` 中沒有負數，所以 `a - b` 在 a 小於 b 時定義為 `0`。例如 `(2 : ℕ) - 5 = 0`。這叫**截斷減法**。
+**除法會取整數部分。** 在 `ℕ` 中 `7 / 2 = 3`。
 
-這會影響翻譯。假設題目寫「i 從 1 到 n，把 2i − 1 加起來」。如果你在 `ℕ` 上寫 `2 * i - 1`，而索引卻不小心從 0 開始，那麼 i = 0 那一項會是 `0` 而不是 −1，數字碰巧仍然「看起來沒錯」，但這只是巧合，而且證明時會因為截斷減法而變得麻煩。[實戰 2](../../labs/02-odd-sum/) 會專門處理這類索引變體。
+這兩件事都會影響翻譯，但不一定讓翻譯變錯，而是讓證明變麻煩，或讓錯誤藏起來。
 
-### 除法會取整數部分
+<details>
+<summary>補充：兩個陷阱各自怎麼影響本章的例子</summary>
 
-在 `ℕ` 中 `7 / 2 = 3`。所以高斯公式「1 + 2 + ... + n = n(n + 1)/2」如果直接寫成 `n * (n + 1) / 2`，雖然在這裡碰巧仍然正確（因為 n(n + 1) 是偶數），證明起來卻要處理整除。比較好的翻譯是把分母乘過去：
+**減法。** 課本寫「$i$ 從 1 到 $n$，把 $2i - 1$ 加起來」，最直接的翻譯是 `∑ i ∈ Finset.Icc 1 n, (2 * i - 1)`。因為 $i \ge 1$，所以 $2i - 1 \ge 1$，截斷不會發生，值是對的。但證明時，Lean 不會自動知道「這裡不會截斷」，每次遇到 `2 * (n + 1) - 1` 都要另外說明它等於 `2 * n + 1`。`omega` 很擅長處理這類自然數的加減與不等式。如果索引不小心從 0 開始，i = 0 那一項會是 `0` 而不是 −1，數字可能碰巧看起來沒錯，這更危險。[實戰 2](../../labs/02-odd-sum/) 會專門處理這類索引變體。
+
+**除法。** 高斯公式如果直接寫成 `n * (n + 1) / 2`，因為 $n(n + 1)$ 是偶數，這裡碰巧仍然正確，但證明時要處理整除。改寫成兩倍形式 `2 * ∑ … = n * (n + 1)` 乾淨得多。你可以為了好證而換一個**等價**寫法，但必須說得出它們為什麼等價；換成一個不等價、更弱的陳述，就是在改題目。
+
+</details>
+
+## 數值實驗是翻譯檢查，不是證明
+
+上面用 `decide` 算 n = 3，只檢查了 n = 3 這一個情況。就算把 n = 0 到 100 全部算過，也只是 101 個情況；定理說的是「對所有 n」，這要靠歸納法。數值實驗很適合用來抓索引寫錯的翻譯，但不能取代證明。如果 AI 回報「我測試了前 1000 項都成立，所以定理成立」，那不是證明。
+
+> **查核提示**：Lean 接受一個有限和的證明，只代表「你寫的那個和」等於右邊。索引從哪裡開始、每項怎麼寫、有沒有用到截斷減法，仍然要你先列出 n = 3 的項自己核對。
+
+## 和 AI 一起學
+
+<AskAI
+  task="請 AI 翻譯高斯公式，再由你列出 n = 3 的項，檢查索引範圍與除法。"
+  prompt={"我在修離散數學。請把下面的定理翻成 Lean 4（mathlib）的陳述，先不要證明。\n定理：對每個正整數 n，1 + 2 + ... + n = n(n+1)/2。\n請用中文說明：\n1. 你的有限和用了哪一個索引範圍（例如 Finset.range 或 Finset.Icc），n = 3 時它包含哪幾項；\n2. 你有沒有用到自然數除法，如果有，為什麼它在這裡不會出錯；\n3. 「正整數」這個條件放在哪裡，證明時會不會用到。"}
+>
+
+- 自己列出 n = 3 的項，算出左右兩邊。若 AI 用了 `Finset.range n`，左邊只有 0 + 1 + 2 = 3，翻譯就錯了。
+- AI 若保留 `/ 2`，請它說明為什麼整除沒有問題；比較乾淨的寫法是改成兩倍形式。
+- 如果 AI 加了 `0 < n` 卻在證明中完全沒用到，Lean 可能會出現 unused variable 的警告。這不是錯，但代表這個條件其實不需要，請想想為什麼 n = 0 時公式也成立。
+
+</AskAI>
+
+### 真實紀錄：兩個 AI 怎麼翻「前 n 個奇數和」
+
+我們把課本版本的題目交給兩個 AI：「對每個正整數 n，$1 + 3 + 5 + \dots + (2n - 1) = n^2$」，附上從 $n = 1$ 開始的歸納證明，並要求它們最後說明 Lean 陳述和課本是否完全一致。兩份結果都通過 Lean 編譯，但**選了不同的索引**。
+
+<AIDialogue tool="Claude Code" model="claude-opus-5-5" date="2026-10-12" result="通過獨立編譯，無錯誤、無警告。" record="induction/claude">
+
+陳述貼近課本，用 `Icc 1 n` 與截斷減法，並從 n = 1 開始歸納：
 
 ```lean
-2 * ∑ i ∈ Finset.range (n + 1), i = n * (n + 1)
+theorem sum_odd (n : ℕ) (hn : 1 ≤ n) :
+    ∑ i ∈ Icc 1 n, (2 * i - 1) = n ^ 2 := by
+  induction n, hn using Nat.le_induction with
+  -- （中略）
+    have h : 2 * (n + 1) - 1 = 2 * n + 1 := by omega
 ```
 
-這和原式在數學上等價，在 Lean 中卻乾淨得多。這是一個「選擇好的陳述」的例子：**你可以為了好證而換一個等價寫法，但你必須能說明它們等價**。換成一個不等價的、更弱的陳述，就是在改題目。
+> 在 ℕ 裡，`a - b` 是截斷減法（a < b 時結果是 0）。不過求和範圍裡 i ≥ 1，所以 2i − 1 ≥ 1，截斷不會發生，和一般整數減法的結果一樣。
 
-## 數值實驗不是證明
+</AIDialogue>
 
-把 n = 0 到 n = 100 都算一遍，確實能讓你更有信心公式是對的，也能抓出索引寫錯的翻譯。Lean 中可以用 `#eval` 計算具體的值，例如：
+<AIDialogue tool="Codex" model="gpt-6.1-sol（本機設定）" date="2026-10-12" result="最終版本通過獨立編譯，無錯誤、無警告。" record="induction/codex">
+
+改用 `range n` 與 `2 * k + 1`。第一次編譯時，Lean 給了一個警告：
+
+```text
+Answer.lean:4:41: warning: Variable name `hn` is not explicitly referenced.
+```
+
+AI 把 `hn` 改名為 `_hn`，警告消失。最終陳述：
 
 ```lean
-#eval ∑ i ∈ Finset.range 5, (2 * i + 1)   -- 25
+theorem sum_first_n_odd_numbers (n : ℕ) (_hn : 0 < n) :
+    (∑ k ∈ Finset.range n, (2 * k + 1)) = n ^ 2 := by
 ```
 
-但這只檢查了 n = 5 這一個情況。陳述是「對所有 n」，此處的歸納證明涵蓋所有 n。請把數值實驗當成**翻譯檢查工具**，而不是證明工具。如果 AI 回報「我測試了前 1000 項都成立，所以定理成立」，那不是證明。
+> Lean 的定理陳述與課本**數學意義完全一致**：`n : ℕ` 加上 `0 < n` 表示正整數，而 `∑ k ∈ Finset.range n, (2 * k + 1)` 依序加總 `1, 3, …, 2n−1`。
+
+它也說明了證明從 n = 0 的空和開始，與課本從 n = 1 開始略有不同。
+
+</AIDialogue>
+
+**你該看出什麼？**
+
+- **未使用的假設是一個訊號。** Codex 的 `0 < n` 在證明裡完全沒被用到，因為對 n = 0 定理也成立。Lean 的警告其實是在提醒：這個條件要嘛多餘，要嘛應該被用到卻沒用到（例如翻譯漏掉了某個需要它的地方）。在這題是前者，所以陳述沒有錯。
+- **消掉警告不等於回答了問題。** 把 `hn` 改名成 `_hn`，只是告訴 Lean「我知道沒用到」，警告就不見了。它在最後說了「先證明所有自然數都成立，再套用到正整數」，這正是 `hn` 沒被用到的原因；但它沒有把這件事和警告連起來，也沒有明說 `0 < n` 其實多餘。看到 `_hn` 時，請自己追問：這個假設為什麼不需要？
+- **兩種索引是否等價，要自己判斷。** 課本寫的是 $1 + 3 + \dots + (2n - 1)$。Claude 的 `Icc 1 n` 配 `2 * i - 1` 是字面翻譯；Codex 的 `range n` 配 `2 * k + 1` 是換了編號。兩者對每個 n 都相等（看上面 n = 3 的表），所以 Codex 說「數學意義一致」是對的。但它只是用文字說明，並沒有在 Lean 中證明兩個和相等；「完全一致」這個說法，也略過了「索引與每項寫法都不同」這件事。若要確認，可以自己寫成定理讓 Lean 檢查：
+
+<LeanCode file="Course/ExtraB.lean" region="extrab-index-bridge" />
+
+Claude 的版本最貼近課本，並主動交代了三處寫法差異，包括截斷減法為什麼不會出問題。代價是證明要多處理減法（那一行 `omega`）。兩種選擇都可以接受，重點是**你要能說出它們等價的理由**，而不是只看 AI 說「一致」。
 
 ## 練習
 
-### 練習 4.1　高斯公式
+### 練習 4.1　翻譯並證明：2 的冪次和
 
-證明以下陳述：
+把「對每個自然數 n，$2^0 + 2^1 + \dots + 2^n = 2^{n+1} - 1$」翻譯成 Lean 陳述並證明。動手前先在紙上回答兩件事：索引範圍應該是 `range n` 還是 `range (n + 1)`？右邊的減法在 `ℕ` 上會不會帶來麻煩？
 
 ```lean
-example (n : ℕ) : 2 * ∑ i ∈ Finset.range (n + 1), i = n * (n + 1) := by
+import Mathlib
+
+example (n : ℕ) : sorry := by
   sorry
 ```
 
 <details>
-<summary>提示一</summary>
+<summary>提示</summary>
 
-先在紙上確認：n = 0 時左邊是 2 × 0，右邊是 0 × 1。接著寫出歸納步驟：從 n 到 n + 1，左邊多了哪一項？
+n = 0 時左邊只有一項 $2^0 = 1$，所以索引包含 0 到 n，是 `range (n + 1)`。右邊的 `- 1` 在 `ℕ` 上不會截斷（$2^{n+1} \ge 1$），但證明時處理減法很麻煩。比較好的寫法是把 1 移到左邊：`(∑ i ∈ Finset.range (n + 1), 2 ^ i) + 1 = 2 ^ (n + 1)`，這和原式等價。括號是為了讓人看清楚：`+ 1` 加在整個和的外面，不是每一項都加 1。（Lean 其實不加括號也這樣解讀，`∑` 的本體只到第一個 `+` 之前，但寫出來比較不會誤會。）
 
-</details>
-
-<details>
-<summary>提示二</summary>
-
-`succ` 情況中，先 `rw [Finset.sum_range_succ]`。這時目標的左邊是 `2 * (S + (n + 1))` 的形式，其中 S 是舊的和。但 `ih` 說的是 `2 * S = ...`，所以要先把乘法分配進去，例如 `rw [mul_add, ih]`，然後 `ring`。
+歸納步驟照「拆、代、整理」：`rw [Finset.sum_range_succ]` 之後，目標是「和 + $2^{n+1}$ + 1」，而 `ih` 說的是「和 + 1」。用 `add_right_comm` 把兩個加項交換位置，就能 `rw [ih]`，最後 `ring`。
 
 </details>
 
@@ -129,57 +259,32 @@ example (n : ℕ) : 2 * ∑ i ∈ Finset.range (n + 1), i = n * (n + 1) := by
 <summary>解答</summary>
 
 ```lean
+import Mathlib
+
+example (n : ℕ) : (∑ i ∈ Finset.range (n + 1), 2 ^ i) + 1 = 2 ^ (n + 1) := by
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [Finset.sum_range_succ, mul_add, ih]
+    rw [Finset.sum_range_succ, add_right_comm, ih]
     ring
 ```
 
-如果 `zero` 情況的 `simp` 沒有完全關閉目標，用 Infoview 看剩下什麼；`rfl` 或 `norm_num` 通常可以處理。
+先用 n = 2 檢查翻譯：左邊是 $1 + 2 + 4 + 1 = 8$，右邊是 $2^3 = 8$。如果誤寫成 `range n`，n = 2 時左邊只有 $1 + 2 + 1 = 4$，就不相等了。這題把減法移到另一邊，和高斯公式改成兩倍形式是同一個想法：換成等價、好證的寫法，並說得出理由。
 
 </details>
 
-### 練習 4.2　列出項
+## 本章小結
 
-對以下三個和式，各列出 n = 3 時包含的所有項，並算出值：
-
-1. `∑ i ∈ Finset.range n, (2 * i + 1)`
-2. `∑ i ∈ Finset.range (n + 1), (2 * i + 1)`
-3. `∑ i ∈ Finset.Icc 1 n, (2 * i - 1)`
-
-<details>
-<summary>解答</summary>
-
-1. i = 0, 1, 2：1 + 3 + 5 = 9 = 3²。
-2. i = 0, 1, 2, 3：1 + 3 + 5 + 7 = 16 = 4²。所以它等於 (n + 1)²，不是 n²。
-3. `Finset.Icc 1 n` 是 `{1, ..., n}`，i = 1, 2, 3：1 + 3 + 5 = 9。這裡的 `2 * i - 1` 因為 i 至少為 1 而不會截斷，但證明時需要處理 `ℕ` 的減法。
-
-三個式子看起來相似，代表的數學陳述卻不同或需要不同的證明技巧。
-
-</details>
-
-### 練習 4.3　判斷翻譯
-
-有人把「1 + 2 + ... + n = n(n + 1)/2」翻譯成 `∑ i ∈ Finset.range n, i = n * (n + 1) / 2`。這個翻譯正確嗎？
-
-<details>
-<summary>提示</summary>
-
-先算 n = 3：`Finset.range 3` 包含哪些 i？
-
-</details>
-
-<details>
-<summary>解答</summary>
-
-不正確。`Finset.range 3` 是 0, 1, 2，和為 3，但 3 × 4 / 2 = 6。左邊其實是 0 + 1 + ... + (n − 1)，應該等於 (n − 1)n/2。要嘛把範圍改成 `Finset.range (n + 1)`，要嘛用 `Finset.Icc 1 n`。這個錯誤用 `#eval` 一試就會發現，這正是數值實驗作為翻譯檢查工具的用途。
-
-</details>
+- 課本的「基底＋歸納步驟」就是 `induction n with`，`zero` 與 `succ n ih` 兩個目標；`ih` 是歸納假設。
+- 有限和的歸納步驟幾乎都是「拆（`Finset.sum_range_succ`）、代（`rw [ih]`）、整理（`ring`）」。`rw [ih]` 失敗時，先把目標變形到出現 `ih` 的左邊。
+- 寫有限和之前先列出 n = 3 的項。`range n`、`range (n + 1)`、`Icc 1 n` 長得像，意義不同。
+- `ℕ` 的截斷減法與整數除法，常讓翻譯「碰巧正確但很難證」。改寫成等價的乘法或加法形式，並說得出等價的理由。
+- AI 說兩個寫法「一致」時，那是文字宣稱；需要的話，寫成定理讓 Lean 檢查。
 
 ## 延伸閱讀
 
 - [Mathematics in Lean](https://leanprover-community.github.io/mathematics_in_lean/) 的「Elementary Number Theory」與「Induction and Recursion」相關小節。
 - [Theorem Proving in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/) 的「Inductive Types」與「Induction and Recursion」兩章，解釋 `ℕ` 為什麼能做歸納。
+- 與大學課程的對照，可看本站的 [大學數學 × Lean 對照](../../guides/university-map/)。
 - 實作：[實戰 2：前 n 個奇數和](../../labs/02-odd-sum/)。
 - 下一章：[使用 mathlib](../05-mathlib/)。

@@ -2,14 +2,14 @@
 import ProofWalkthrough from './ProofWalkthrough.astro';
 const base = import.meta.env.BASE_URL;
 const chapters = [
- ['01', '第一個 Lean 證明', '把第一個數學想法交給 Lean 檢查。', '01-first-proof'],
- ['02', '命題為何是型別', '理解證明、函數與型別之間的關係。', '02-propositions-as-types'],
- ['03', '邏輯與量詞', '從假設走向結論，讀懂每一步目標。', '03-logic-and-quantifiers'],
- ['04', '歸納法與有限和', '讓無限多個自然數共用一個證明。', '04-induction-and-sums'],
- ['05', '使用 mathlib', '找對引理，讀清前提，再使用自動化。', '05-mathlib'],
- ['06', '與 agent 合作', '在 Claude Code 或 Codex 中完成真實案例。', '06-agent-collaboration'],
- ['07', '讓 agent 使用 Lean 工具', '把目標查詢、診斷與修復接成工作流程。', '07-lean-tools'],
- ['08', '完成並查核專題', '核對命題、證明依賴與最後交付。', '08-project-audit'],
+ ['01', '第一個 Lean 證明', '把第一個數學想法交給 Lean 檢查。', '01-first-proof', '離散數學 · 證明導論'],
+ ['02', '命題為何是型別', '理解證明、函數與型別之間的關係。', '02-propositions-as-types', '離散數學 · 程式語言'],
+ ['03', '邏輯與量詞', '從假設走向結論，讀懂每一步目標。', '03-logic-and-quantifiers', '離散數學'],
+ ['04', '歸納法與有限和', '讓無限多個自然數共用一個證明。', '04-induction-and-sums', '離散數學'],
+ ['05', '使用 mathlib', '找對引理，讀清前提，再使用自動化。', '05-mathlib', '微積分先備'],
+ ['06', '與 agent 合作', '在 Claude Code 或 Codex 中完成真實案例。', '06-agent-collaboration', '任何證明作業'],
+ ['07', '讓 agent 使用 Lean 工具', '把目標查詢、診斷與修復接成工作流程。', '07-lean-tools', '任何證明作業'],
+ ['08', '完成並查核專題', '核對命題、證明依賴與最後交付。', '08-project-audit', '任何證明作業'],
 ];
 ---
 <div class="course-home">
@@ -22,12 +22,12 @@ const chapters = [
     <ProofWalkthrough />
   </section>
   <section class="learning-contract" aria-label="課程方法"><div><span class="section-index">01 / 理解</span><h2>你負責數學想法</h2><p>先說清楚命題、定義域與假設，再把紙上的推理翻成 Lean。</p></div><div><span class="section-index">02 / 協作</span><h2>AI 協助搜尋與嘗試</h2><p>讓 agent 提出引理與證明步驟，根據 Lean 的訊息逐步修正。</p></div><div><span class="section-index">03 / 查核</span><h2>讀懂通過的理由</h2><p>檢查證明是否完整，也核對它是否真的回答了原來的問題。</p></div></section>
-  <section class="home-section" aria-labelledby="course-path"><div class="section-heading"><p class="eyebrow">八章主線</p><h2 id="course-path">從第一個證明，到自己的專題。</h2><p>不需要先學過 Lean。熟悉基本數學證明，就可以開始。</p></div>
-    <div class="chapter-list">{chapters.map(([n,title,desc,slug]) => <a class="chapter-row" href={`${base}chapters/${slug}/`}><span class="chapter-number">{n}</span><span class="chapter-body"><strong>{title}</strong><span>{desc}</span></span><span class="chapter-arrow" aria-hidden="true">↗</span></a>)}</div>
+  <section class="home-section" aria-labelledby="course-path"><div class="section-heading"><p class="eyebrow">八章主線</p><h2 id="course-path">從第一個證明，到自己的專題。</h2><p>不需要先學過 Lean。熟悉基本數學證明，就可以開始。每章都從大學課本上的證明出發，再一句一句翻成 Lean。</p><a class="text-link" href={`${base}guides/university-map/`}>從你正在修的課找起點：大學數學 × Lean 對照 →</a></div>
+    <div class="chapter-list">{chapters.map(([n,title,desc,slug,course]) => <a class="chapter-row" href={`${base}chapters/${slug}/`}><span class="chapter-number">{n}</span><span class="chapter-body"><strong>{title}</strong><span>{desc}</span><span class="chapter-course">對應：{course}</span></span><span class="chapter-arrow" aria-hidden="true">↗</span></a>)}</div>
   </section>
   <section class="home-section" aria-labelledby="practice"><div class="section-heading"><p class="eyebrow">動手實戰</p><h2 id="practice">讓工具進入真正的解題流程。</h2></div>
     <div class="lab-list"><a href={`${base}labs/01-proof-repair/`}><span class="lab-level">實戰一 · 入門</span><h3>修復一個邏輯證明</h3><p>讀懂錯誤訊息，限制 agent 的修改範圍，辨認缺少前提的題目。</p><span class="text-link">進入實戰 →</span></a><a href={`${base}labs/02-odd-sum/`}><span class="lab-level">實戰二 · 歸納</span><h3>前 n 個奇數的和</h3><p>釐清索引，寫出歸納想法，讓 agent 協助搜尋有限和引理。</p><span class="text-link">進入實戰 →</span></a><a href={`${base}labs/03-sum-of-squares/`}><span class="lab-level">實戰三 · 專題</span><h3>平方和什麼時候是零？</h3><p>把列表上的實數性質變成精確規格，再查核完整證明。</p><span class="text-link">進入實戰 →</span></a></div>
   </section>
-  <section class="advanced-path"><div><p class="eyebrow">再往前一步</p><h2>把熟悉的大學數學帶進 Lean。</h2><p>主線完成後，用實分析與線性代數練習閱讀 mathlib 中較豐富的型別與結構。</p></div><div class="advanced-links"><a href={`${base}advanced/01-limits/`}>序列和的極限 <span aria-hidden="true">↗</span></a><a href={`${base}advanced/02-projection/`}>平面投影矩陣 <span aria-hidden="true">↗</span></a><a href={`${base}guides/resources/`}>參考教材與中文影片 <span aria-hidden="true">↗</span></a></div></section>
+  <section class="advanced-path"><div><p class="eyebrow">再往前一步</p><h2>把熟悉的大學數學帶進 Lean。</h2><p>主線完成後，用高等微積分的 ε-N 證明與線性代數的投影矩陣，練習把課本證明逐句寫成 Lean。</p></div><div class="advanced-links"><a href={`${base}advanced/01-limits/`}>序列和的極限 <span aria-hidden="true">↗</span></a><a href={`${base}advanced/02-projection/`}>平面投影矩陣 <span aria-hidden="true">↗</span></a><a href={`${base}guides/university-map/`}>大學數學 × Lean 對照 <span aria-hidden="true">↗</span></a><a href={`${base}guides/resources/`}>參考教材與中文影片 <span aria-hidden="true">↗</span></a></div></section>
   <section class="download-strip"><div><h2>一份專案，跟著教材一起做。</h2><p>含練習骨架、參考解答，以及給 agent 的工作約定。</p></div><a class="primary-link" href={`${base}downloads/lean-ai-examples.zip`} download>下載 Lean 實作專案 ↓</a></section>
 </div>

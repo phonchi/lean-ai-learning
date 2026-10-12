@@ -2,45 +2,46 @@
 > lean-ai-learning@1.0.0 build
 > node scripts/prepare-examples.mjs && astro build
 
-已打包 20 個 Lean 專案檔案：public/downloads/lean-ai-examples.zip
-10:26:22 [content] Syncing content
-10:26:22 [content] Synced content
-10:26:22 [types] Generated 437ms
-10:26:22 [build] output: "static"
-10:26:22 [build] mode: "static"
-10:26:22 [build] directory: /home/phonchi/lean/dist/
-10:26:22 [build] Collecting build info...
-10:26:22 [build] ✓ Completed in 521ms.
-10:26:22 [build] Building static entrypoints...
-10:26:23 [vite] ✓ built in 891ms
-10:26:23 [vite] ✓ built in 59ms
-10:26:23 [build] Rearranging server assets...
+已打包 24 個 Lean 專案檔案：public/downloads/lean-ai-examples.zip
+23:45:32 [content] Syncing content
+23:45:32 [content] Synced content
+23:45:32 [types] Generated 480ms
+23:45:32 [build] output: "static"
+23:45:32 [build] mode: "static"
+23:45:32 [build] directory: /home/phonchi/lean/dist/
+23:45:32 [build] Collecting build info...
+23:45:32 [build] ✓ Completed in 612ms.
+23:45:32 [build] Building static entrypoints...
+23:45:33 [vite] ✓ built in 1.32s
+23:45:34 [vite] ✓ built in 72ms
+23:45:34 [build] Rearranging server assets...
 
  generating static routes 
-10:26:23 [WARN] [build] Could not render `/404` from route `/[...slug]` as it conflicts with higher priority route `/404`.
-10:26:23   ├─ /404.html (+16ms) 
-10:26:23   ├─ /advanced/01-limits/index.html (+11ms) 
-10:26:23   ├─ /advanced/02-projection/index.html (+5ms) 
-10:26:23   ├─ /chapters/01-first-proof/index.html (+4ms) 
-10:26:23   ├─ /chapters/02-propositions-as-types/index.html (+5ms) 
-10:26:23   ├─ /chapters/03-logic-and-quantifiers/index.html (+4ms) 
-10:26:23   ├─ /chapters/04-induction-and-sums/index.html (+3ms) 
-10:26:23   ├─ /chapters/05-mathlib/index.html (+4ms) 
-10:26:23   ├─ /chapters/06-agent-collaboration/index.html (+4ms) 
-10:26:23   ├─ /chapters/07-lean-tools/index.html (+4ms) 
-10:26:23   ├─ /chapters/08-project-audit/index.html (+4ms) 
-10:26:23   ├─ /guides/resources/index.html (+3ms) 
-10:26:23   ├─ /guides/setup/index.html (+3ms) 
-10:26:23   ├─ /index.html (+2ms) 
-10:26:23   ├─ /labs/01-proof-repair/index.html (+3ms) 
-10:26:23   ├─ /labs/02-odd-sum/index.html (+3ms) 
-10:26:23   ├─ /labs/03-sum-of-squares/index.html (+4ms) 
-10:26:23 ✓ Completed in 103ms.
+23:45:34 [WARN] [build] Could not render `/404` from route `/[...slug]` as it conflicts with higher priority route `/404`.
+23:45:34   ├─ /404.html (+15ms) 
+23:45:34   ├─ /advanced/01-limits/index.html (+15ms) 
+23:45:34   ├─ /advanced/02-projection/index.html (+7ms) 
+23:45:34   ├─ /chapters/01-first-proof/index.html (+6ms) 
+23:45:34   ├─ /chapters/02-propositions-as-types/index.html (+7ms) 
+23:45:34   ├─ /chapters/03-logic-and-quantifiers/index.html (+7ms) 
+23:45:34   ├─ /chapters/04-induction-and-sums/index.html (+7ms) 
+23:45:34   ├─ /chapters/05-mathlib/index.html (+6ms) 
+23:45:34   ├─ /chapters/06-agent-collaboration/index.html (+5ms) 
+23:45:34   ├─ /chapters/07-lean-tools/index.html (+3ms) 
+23:45:34   ├─ /chapters/08-project-audit/index.html (+4ms) 
+23:45:34   ├─ /guides/resources/index.html (+3ms) 
+23:45:34   ├─ /guides/setup/index.html (+3ms) 
+23:45:34   ├─ /guides/university-map/index.html (+3ms) 
+23:45:34   ├─ /index.html (+8ms) 
+23:45:34   ├─ /labs/01-proof-repair/index.html (+4ms) 
+23:45:34   ├─ /labs/02-odd-sum/index.html (+4ms) 
+23:45:34   ├─ /labs/03-sum-of-squares/index.html (+4ms) 
+23:45:34 ✓ Completed in 135ms.
 
-10:26:23 [build] ✓ Completed in 1.09s.
-10:26:23 [starlight:pagefind] Building search index with Pagefind...
-10:26:23 [starlight:pagefind] Found 17 HTML files.
-10:26:23 [starlight:pagefind] Finished building search index in 213ms.
-10:26:23 [WARN] [@astrojs/sitemap] The Sitemap integration requires the `site` astro.config option. Skipping.
-10:26:23 [build] 17 page(s) built in 1.83s
-10:26:23 [build] Complete!
+23:45:34 [build] ✓ Completed in 1.57s.
+23:45:34 [starlight:pagefind] Building search index with Pagefind...
+23:45:34 [starlight:pagefind] Found 18 HTML files.
+23:45:34 [starlight:pagefind] Finished building search index in 232ms.
+23:45:34 [WARN] [@astrojs/sitemap] The Sitemap integration requires the `site` astro.config option. Skipping.
+23:45:34 [build] 18 page(s) built in 2.42s
+23:45:34 [build] Complete!

@@ -1,25 +1,9 @@
 ---
-import { readFileSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
 import { Code } from 'astro:components';
+import { readLeanSource } from '../lib/leanSource';
 interface Props { file: string; region?: string; }
 const { file, region } = Astro.props;
-const root = resolve(process.cwd(), 'lean-examples');
-const path = resolve(root, file);
-if (!path.startsWith(root + sep) || !file.endsWith('.lean')) throw new Error(`Invalid Lean source: ${file}`);
-let code = readFileSync(path, 'utf8');
-if (region) {
-  const start = `-- ANCHOR: ${region}`;
-  const end = `-- ANCHOR_END: ${region}`;
-  const lines = code.split('\n');
-  const from = lines.findIndex(line => line.trim() === start);
-  const to = lines.findIndex((line, i) => i > from && line.trim() === end);
-  if (from < 0 || to < 0) throw new Error(`Missing Lean region ${file}:${region}`);
-  code = lines.slice(from + 1, to).join('\n');
-} else {
-  code = code.split('\n').filter(line => !/^\s*-- ANCHOR(?:_END)?:/.test(line)).join('\n');
-}
-code = code.trimEnd();
+const code = readLeanSource(file, region);
 ---
 <figure class="lean-source">
   <figcaption><span>{file}</span><button type="button" data-lean-copy data-code={code} aria-label={`複製 ${file} 的程式碼`}>複製程式碼</button></figcaption>
@@ -27,17 +11,5 @@ code = code.trimEnd();
   <span class="copy-feedback" aria-live="polite"></span>
 </figure>
 <script>
-  document.addEventListener('click', async (event) => {
-    const target = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-lean-copy]') : null;
-    if (!target) return;
-    const feedback = target.closest('figure')?.querySelector('.copy-feedback');
-    try {
-      await navigator.clipboard.writeText(target.dataset.code || '');
-      target.textContent = '已複製';
-      if (feedback) feedback.textContent = '程式碼已複製到剪貼簿';
-      setTimeout(() => { target.textContent = '複製程式碼'; }, 1800);
-    } catch {
-      if (feedback) feedback.textContent = '無法自動複製，請選取下方程式碼後複製。';
-    }
-  });
+  import '../scripts/copy';
 </script>

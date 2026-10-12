@@ -6,6 +6,14 @@ sidebar:
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import AskAI from '../../../components/AskAI.astro';
+
+<UniCourse courses="離散數學 · 數學歸納法">
+
+離散數學講數學歸納法時，「前 n 個奇數和為 n²」幾乎是必考的例題。紙上證明只有兩行，但寫成 Lean 時要先決定索引從 0 還是 1 開始、第 k 項怎麼寫。這正是課本上「求和記號的上下界」在形式化時變成的具體問題。
+
+</UniCourse>
 
 ## 這次實戰的定位
 
@@ -49,17 +57,18 @@ induction n with
 | succ n ih => ...
 ```
 
-如果卡住，可以請 AI 提出建議。使用下面的 Prompt：
+如果卡住，可以請 AI 提出建議：
 
-```text
-這是 Lean 4 + mathlib 的證明。目前的 proof state 如下。
-請只建議「下一步」的一個 tactic，並說明：
-(1) 它對應的數學步驟；
-(2) 執行後 proof state 預期會變成什麼。
-不要修改定理陳述，不要使用 sorry、admit 或 axiom。
+<AskAI
+  task="請 AI 只建議下一步的一個 tactic，並預測執行後的 proof state。"
+  prompt={"這是 Lean 4 + mathlib 的證明。目前的 proof state 如下。\n請只建議「下一步」的一個 tactic，並說明：\n(1) 它對應的數學步驟；\n(2) 執行後 proof state 預期會變成什麼。\n不要修改定理陳述，不要使用 sorry、admit 或 axiom。\n\nproof state：（貼上）"}
+>
 
-proof state：（貼上）
-```
+- 它是否只給了**一個** tactic？給了一整段證明時，只取第一步。
+- 套用前，你自己先預測目標會變成什麼；套用後，Infoview 和 AI 的預測一致嗎？
+- 它說的數學步驟（例如「拆出最後一項」）和你在紙上寫的歸納步驟對得上嗎？
+
+</AskAI>
 
 **審核每一個建議**：在套用前，先預測它會讓目標變成什麼；套用後，比對 Infoview 是否與 AI 的預測一致。不一致時，以 Lean 為準，並把差異記下來。
 

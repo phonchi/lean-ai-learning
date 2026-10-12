@@ -1,0 +1,57 @@
+---
+// 第 8 章：查核的三道關卡。原題 → 陳述忠實 → 依賴 → 最終檔案。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 796 260" role="img" aria-labelledby="ag-title ag-desc" style="min-width:640px">
+    <title id="ag-title">查核的三道關卡</title>
+    <desc id="ag-desc">從原題出發，依序通過三道關卡：陳述是否忠實、依賴是否乾淨（#print axioms）、最終檔案是否實際檢查過。三關都通過，才可以說已形式化。任一關沒過就停下修正，不往下走。</desc>
+    <defs>
+      <marker id="ag-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+      <marker id="ag-arrow-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="mk-accent" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <!-- 原題 -->
+    <rect class="box-soft" x="8" y="48" width="140" height="88" rx="4"/>
+    <text class="t-b" x="22" y="78">原題</text>
+    <text class="t-s" x="22" y="102">課本、作業、論文</text>
+    <text class="t-s" x="22" y="122">的那一句敘述</text>
+    <line class="line" x1="148" y1="92" x2="160" y2="92" marker-end="url(#ag-arrow)"/>
+
+    <!-- 關卡 1 -->
+    <text class="t-a" x="168" y="36">先看這關</text>
+    <rect class="box" x="168" y="48" width="140" height="88" rx="4"/>
+    <text class="t-b" x="182" y="78">關卡 1　陳述忠實</text>
+    <text class="t-s" x="182" y="102">型別、量詞、假設</text>
+    <text class="t-s" x="182" y="122">運算定義、小例子</text>
+    <line class="line" x1="308" y1="92" x2="320" y2="92" marker-end="url(#ag-arrow)"/>
+
+    <!-- 關卡 2 -->
+    <rect class="box" x="328" y="48" width="140" height="88" rx="4"/>
+    <text class="t-b" x="342" y="78">關卡 2　依賴</text>
+    <text class="t-ms" x="342" y="102">#print axioms</text>
+    <text class="t-s" x="342" y="122">無 sorryAx、自訂公理</text>
+    <line class="line" x1="468" y1="92" x2="480" y2="92" marker-end="url(#ag-arrow)"/>
+
+    <!-- 關卡 3 -->
+    <rect class="box" x="488" y="48" width="140" height="88" rx="4"/>
+    <text class="t-b" x="502" y="78">關卡 3　最終檔案</text>
+    <text class="t-ms" x="502" y="102">lake env lean</text>
+    <text class="t-s" x="502" y="122">exit 0、只動證明</text>
+    <line class="line-accent" x1="628" y1="92" x2="640" y2="92" marker-end="url(#ag-arrow-a)"/>
+
+    <!-- 結果 -->
+    <rect class="box-focal" x="648" y="48" width="140" height="88" rx="4"/>
+    <text class="t-b" x="662" y="78">可以說已形式化</text>
+    <text class="t-s" x="662" y="102">再附一段不提 Lean</text>
+    <text class="t-s" x="662" y="122">的數學說明</text>
+
+    <!-- 失敗路徑 -->
+    <line class="line-dash" x1="238" y1="136" x2="238" y2="192"/>
+    <line class="line-dash" x1="398" y1="136" x2="398" y2="192"/>
+    <line class="line-dash" x1="558" y1="136" x2="558" y2="192"/>
+    <rect class="box-dash" x="168" y="192" width="460" height="44" rx="4"/>
+    <text class="t" x="398" y="219" text-anchor="middle">任一關沒過：停在這裡修正，不往下一關走</text>
+  </svg>
+  </div>
+  <figcaption>三關的順序不能對調。陳述一開始就錯了，依賴再乾淨、檔案再完整，證明的也是另一個定理。</figcaption>
+</figure>

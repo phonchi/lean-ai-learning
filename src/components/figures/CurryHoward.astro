@@ -1,0 +1,34 @@
+---
+// 第 2 章：程式世界與邏輯世界的對照。強調列：函數 ↔ 蘊含。
+---
+<figure class="diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 340" role="img" aria-labelledby="ch-title ch-desc" style="min-width:600px">
+    <title id="ch-title">程式世界與邏輯世界的對照</title>
+    <desc id="ch-desc">四列對照：型別對應命題；型別的值對應命題的證明；函數型別 A → B 對應蘊含 P → Q；一對值對應「且」的證明。第三列（函數對應蘊含）是本章重點。</desc>
+    <defs>
+      <marker id="ch-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon class="mk" points="0 0, 8 3, 0 6"/></marker>
+    </defs>
+    <text class="t-b" x="170" y="34" text-anchor="middle">程式世界</text>
+    <text class="t-b" x="550" y="34" text-anchor="middle">邏輯世界</text>
+    {[
+      { l: '型別', le: 'ℕ : Type', r: '命題', re: '2 + 2 = 4 : Prop' },
+      { l: '型別的一個值', le: '3 : ℕ', r: '命題的一個證明', re: 'hp : P' },
+      { l: '函數型別 A → B', le: 'fun n => n + 1 : ℕ → ℕ', r: '蘊含 P → R', re: 'fun hP => hQR (hPQ hP)' },
+      { l: '一對值', le: '(3, 5) : ℕ × ℕ', r: '「且」的證明', re: '⟨hp, hq⟩ : P ∧ Q' },
+    ].map((row, i) => (
+      <g>
+        <rect class={i === 2 ? 'box-focal' : 'box'} x="40" y={52 + i*68} width="260" height="54" rx="4"/>
+        <text class="t-b" x="56" y={74 + i*68}>{row.l}</text>
+        <text class="t-ms" x="56" y={95 + i*68}>{row.le}</text>
+        <line class="line" x1="302" y1={79 + i*68} x2="418" y2={79 + i*68} marker-start="url(#ch-arrow)" marker-end="url(#ch-arrow)"/>
+        <rect class={i === 2 ? 'box-focal' : 'box'} x="420" y={52 + i*68} width="260" height="54" rx="4"/>
+        <text class="t-b" x="436" y={74 + i*68}>{row.r}</text>
+        <text class="t-ms" x="436" y={95 + i*68}>{row.re}</text>
+      </g>
+    ))}
+    <text class="t-s" x="360" y="332" text-anchor="middle">型別檢查：確認每個值都用在型別允許的地方 ＝ 確認每一步推理都合法</text>
+  </svg>
+  </div>
+  <figcaption>左右兩欄是同一套機制的兩種讀法。本章重點是第三列：「若 P 則 Q」的證明，就是一個把 P 的證明變成 Q 的證明的函數。</figcaption>
+</figure>

@@ -6,6 +6,14 @@ sidebar:
 ---
 
 import LeanCode from '../../../components/LeanCode.astro';
+import UniCourse from '../../../components/UniCourse.astro';
+import AskAI from '../../../components/AskAI.astro';
+
+<UniCourse courses="離散數學 · 命題邏輯">
+
+離散數學第一章的命題邏輯：蘊含的傳遞性（假言三段論）、真值表，以及「一個推論規則不成立時，要用反例說明」。任務 A 是課本上最基本的推論規則，任務 B 則是作業中常見的錯誤：把蘊含的方向弄反。
+
+</UniCourse>
 
 ## 這次實戰的定位
 
@@ -45,14 +53,16 @@ import LeanCode from '../../../components/LeanCode.astro';
 
 本次實戰中，AI 只能當解釋者。把錯誤訊息與 proof state 一起貼給它：
 
-```text
-以下是 Lean 4 的錯誤訊息與當時的 proof state。
-請用中文解釋這個錯誤的意思、是哪個型別對不上，
-但不要給我修改後的程式碼。
+<AskAI
+  task="請 AI 解釋 Lean 的錯誤訊息，但不要給修改後的程式碼。"
+  prompt={"以下是 Lean 4 的錯誤訊息與當時的 proof state。\n請用中文解釋這個錯誤的意思、是哪個型別對不上，\n但不要給我修改後的程式碼。\n\n錯誤訊息：（貼上）\nproof state：（貼上）"}
+>
 
-錯誤訊息：（貼上）
-proof state：（貼上）
-```
+- AI 有沒有遵守「不給程式碼」？如果它直接給了修好的證明，先不要看，自己改完再對照。
+- 它說「哪個型別對不上」時，指出的兩個型別真的出現在你的錯誤訊息裡嗎？
+- 讀完解釋後，你能用一句話說出下一步要改什麼嗎？說不出來，就再問它那一句。
+
+</AskAI>
 
 你最常遇到的幾種錯誤：
 
